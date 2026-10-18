@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 건강관리 코치</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <a href="#home" class="logo">AI 건강관리 코치</a>
+        <nav>
+            <a href="#home">홈</a>
+            <a href="#diet">식단 추천</a>
+            <a href="#exercise">운동 추천</a>
+            <a href="#info">건강 정보</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <p class="eyebrow">YOUR DAILY HEALTH PARTNER</p>
+                <h1>건강한 변화,<br>오늘부터 시작해요.</h1>
+                <p>나의 목표와 생활 습관에 맞춰 식단과 운동 계획을 세워보세요.</p>
+                <a href="#diet" class="button">식단 추천받기</a>
+            </div>
+        </section>
+
+        <section id="diet" class="section">
+            <div class="section-heading">
+                <p class="eyebrow">MEAL PLANNER</p>
+                <h2>AI 식단 추천</h2>
+                <p>목표와 음식 취향을 입력하면 맞춤 식단을 추천해 드려요.</p>
+            </div>
+
+            <form id="diet-form" class="form-card">
+                <label for="diet-goal">식단 목표</label>
+                <select id="diet-goal" required>
+                    <option value="">목표를 선택하세요</option>
+                    <option value="체중 관리">체중 관리</option>
+                    <option value="건강한 식습관">건강한 식습관</option>
+                    <option value="균형 잡힌 식사">균형 잡힌 식사</option>
+                </select>
+
+                <label for="diet-food">좋아하는 음식</label>
+                <input id="diet-food" type="text" placeholder="예: 닭고기, 달걀, 두부" required>
+
+                <label for="diet-dislike">싫어하거나 피하고 싶은 음식</label>
+                <input id="diet-dislike" type="text" placeholder="없으면 없음이라고 입력하세요">
+
+                <label for="diet-meals">하루 식사 횟수</label>
+                <select id="diet-meals" required>
+                    <option value="">식사 횟수를 선택하세요</option>
+                    <option value="2끼">2끼</option>
+                    <option value="3끼">3끼</option>
+                    <option value="4끼 이상">4끼 이상</option>
+                </select>
+
+                <button type="submit" id="diet-button" class="button">AI 식단 추천받기</button>
+                <p id="diet-status" class="status" role="status"></p>
+            </form>
+
+            <div id="diet-result" class="result-card" aria-live="polite">
+                <h3>나의 맞춤 식단</h3>
+                <div id="diet-result-content"></div>
+            </div>
+        </section>
+
+        <section id="exercise" class="section section-alt">
+            <div class="section-heading">
+                <p class="eyebrow">WORKOUT PLANNER</p>
+                <h2>맞춤 운동 계획</h2>
+                <p>운동 목표와 장소, 시간을 기준으로 계획을 확인해 보세요.</p>
+            </div>
+
+            <form id="exercise-form" class="form-card">
+                <label for="exercise-goal">운동 목표</label>
+                <select id="exercise-goal" required>
+                    <option value="">목표를 선택하세요</option>
+                    <option value="체중 관리">체중 관리</option>
+                    <option value="근력 향상">근력 향상</option>
+                    <option value="체력 향상">체력 향상</option>
+                    <option value="건강한 생활 습관">건강한 생활 습관</option>
+                </select>
+
+                <label for="exercise-level">운동 경험</label>
+                <select id="exercise-level" required>
+                    <option value="">운동 경험을 선택하세요</option>
+                    <option value="초보">초보</option>
+                    <option value="중급">중급</option>
+                    <option value="숙련">숙련</option>
+                </select>
+
+                <label for="exercise-time">운동 가능 시간</label>
+                <select id="exercise-time" required>
+                    <option value="">시간을 선택하세요</option>
+                    <option value="20분">20분</option>
+                    <option value="30분">30분</option>
+                    <option value="1시간">1시간</option>
+                    <option value="1시간 이상">1시간 이상</option>
+                </select>
+
+                <label for="exercise-place">운동 장소</label>
+                <select id="exercise-place" required>
+                    <option value="">장소를 선택하세요</option>
+                    <option value="집">집</option>
+                    <option value="헬스장">헬스장</option>
+                    <option value="야외">야외</option>
+                </select>
+
+                <button type="submit" id="exercise-button" class="button">운동 계획 확인하기</button>
+                <p id="exercise-status" class="status" role="status"></p>
+            </form>
+
+            <div id="exercise-result" class="result-card" aria-live="polite">
+                <h3>나의 맞춤 운동 계획</h3>
+                <div id="exercise-result-content"></div>
+            </div>
+        </section>
+
+        <section id="info" class="section">
+            <div class="section-heading">
+                <p class="eyebrow">HEALTHY HABITS</p>
+                <h2>건강한 생활 습관</h2>
+                <p>작은 습관을 꾸준히 실천하는 것이 중요해요.</p>
+            </div>
+
+            <div class="info-grid">
+                <article class="info-card">
+                    <h3>🥗 균형 잡힌 식사</h3>
+                    <p>다양한 식품을 골고루 먹고 규칙적인 식사 습관을 만들어 보세요.</p>
+                </article>
+                <article class="info-card">
+                    <h3>🚶 꾸준한 움직임</h3>
+                    <p>자신의 체력에 맞춰 걷기와 가벼운 근력 운동부터 시작해 보세요.</p>
+                </article>
+                <article class="info-card">
+                    <h3>🌙 충분한 휴식</h3>
+                    <p>규칙적인 수면과 휴식 시간을 확보해 몸의 회복을 도와주세요.</p>
+                </article>
+            </div>
+
+            <p class="disclaimer">이 서비스는 일반적인 건강 관리 정보를 제공하며 의료 진단이나 치료를 대신하지 않습니다.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>AI 건강관리 코치 · 건강한 하루를 위한 작은 시작</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
