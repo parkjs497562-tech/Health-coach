@@ -4,152 +4,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 건강관리 코치</title>
+    <meta name="theme-color" content="#101513">
+    <title>Forma | Health Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header class="navbar">
-        <a href="#home" class="logo">AI 건강관리 코치</a>
-        <nav>
-            <a href="#home">홈</a>
-            <a href="#diet">식단 추천</a>
-            <a href="#exercise">운동 추천</a>
-            <a href="#info">건강 정보</a>
-        </nav>
-    </header>
-
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-content">
-                <p class="eyebrow">YOUR DAILY HEALTH PARTNER</p>
-                <h1>건강한 변화,<br>오늘부터 시작해요.</h1>
-                <p>나의 목표와 생활 습관에 맞춰 식단과 운동 계획을 세워보세요.</p>
-                <a href="#diet" class="button">식단 추천받기</a>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#dashboard"><span class="brand-mark">f</span><span>forma<span class="brand-period">.</span></span></a>
+            <p class="side-label">WORKSPACE</p>
+            <nav class="side-nav" aria-label="주요 메뉴">
+                <a class="nav-link active" href="#dashboard"><span class="nav-icon">◫</span> 대시보드</a>
+                <a class="nav-link" href="#meals"><span class="nav-icon">◉</span> 식단 기록</a>
+                <a class="nav-link" href="#training"><span class="nav-icon">↗</span> 운동 관리</a>
+                <a class="nav-link" href="#report"><span class="nav-icon">▤</span> 건강 리포트</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="privacy-note"><span class="privacy-dot"></span><span>내 기록은 이 기기에 저장돼요</span></div>
+                <a class="profile" href="#settings"><span class="avatar">F</span><span><strong>나의 건강 플랜</strong><small>개인 대시보드</small></span><span class="profile-more">···</span></a>
             </div>
-        </section>
+        </aside>
 
-        <section id="diet" class="section">
-            <div class="section-heading">
-                <p class="eyebrow">MEAL PLANNER</p>
-                <h2>AI 식단 추천</h2>
-                <p>목표와 음식 취향을 입력하면 맞춤 식단을 추천해 드려요.</p>
-            </div>
+        <main class="main-content">
+            <header class="topbar">
+                <div class="breadcrumb">내 공간 <span>/</span> <strong>대시보드</strong></div>
+                <div class="topbar-right"><span class="today-label" id="today-label"></span><span class="live-indicator">● 오늘의 기록</span></div>
+            </header>
 
-            <form id="diet-form" class="form-card">
-                <label for="diet-goal">식단 목표</label>
-                <select id="diet-goal" required>
-                    <option value="">목표를 선택하세요</option>
-                    <option value="체중 관리">체중 관리</option>
-                    <option value="건강한 식습관">건강한 식습관</option>
-                    <option value="균형 잡힌 식사">균형 잡힌 식사</option>
-                </select>
+            <section id="dashboard" class="page-section dashboard-section">
+                <div class="welcome-row">
+                    <div><p class="eyebrow">YOUR PERSONAL HEALTH SYSTEM</p><h1>오늘도, 나답게 건강하게.</h1><p class="welcome-copy">작은 기록이 만드는 큰 변화. 오늘의 컨디션을 확인해 보세요.</p></div>
+                    <a class="primary-button" href="#training">운동 기록하기 <span>↗</span></a>
+                </div>
 
-                <label for="diet-food">좋아하는 음식</label>
-                <input id="diet-food" type="text" placeholder="예: 닭고기, 달걀, 두부" required>
+                <div class="metric-grid">
+                    <article class="metric-card weight-metric"><div class="metric-top"><span>현재 체중</span><span class="metric-symbol">↕</span></div><div class="metric-value"><strong id="current-weight">--</strong><span>kg</span></div><p id="weight-change" class="metric-foot">첫 체중을 기록해 보세요</p></article>
+                    <article class="metric-card calorie-metric"><div class="metric-top"><span>오늘 섭취 칼로리</span><span class="metric-symbol">◉</span></div><div class="metric-value"><strong id="today-calories">0</strong><span>kcal</span></div><div class="progress-track"><span id="calorie-progress"></span></div><p class="metric-foot"><span id="calorie-remaining">2000</span> kcal 목표까지</p></article>
+                    <article class="metric-card workout-metric"><div class="metric-top"><span>이번 주 운동</span><span class="metric-symbol">↗</span></div><div class="metric-value"><strong id="weekly-workouts">0</strong><span>회</span></div><p class="metric-foot"><span id="weekly-minutes">0</span>분 움직였어요</p></article>
+                    <article class="metric-card streak-metric"><div class="metric-top"><span>기록 스트릭</span><span class="metric-symbol">✳</span></div><div class="metric-value"><strong id="streak-count">0</strong><span>일</span></div><p class="metric-foot">꾸준함이 가장 좋은 전략</p></article>
+                </div>
 
-                <label for="diet-dislike">싫어하거나 피하고 싶은 음식</label>
-                <input id="diet-dislike" type="text" placeholder="없으면 없음이라고 입력하세요">
+                <div class="dashboard-grid weight-grid">
+                    <article class="panel weight-panel">
+                        <div class="panel-heading"><div><p class="panel-kicker">BODY MEASUREMENTS</p><h2>체중 변화</h2></div><div class="range-switch" role="group" aria-label="그래프 기간"><button class="range-button active" data-range="7">1주</button><button class="range-button" data-range="30">1개월</button></div></div>
+                        <div class="chart-summary"><strong id="chart-current">기록을 시작해 보세요</strong><span id="chart-goal"></span></div>
+                        <div class="chart-wrap"><svg id="weight-chart" viewBox="0 0 640 220" role="img" aria-label="체중 변화 그래프"></svg><div id="chart-empty" class="chart-empty">체중을 기록하면 변화 그래프가 여기에 표시돼요.</div></div>
+                        <div id="chart-dates" class="chart-dates"></div>
+                        <form id="weight-form" class="inline-form weight-form"><label class="sr-only" for="weight-date">기록 날짜</label><input id="weight-date" type="date" required><label class="sr-only" for="weight-input">체중</label><input id="weight-input" type="number" min="20" max="300" step="0.1" placeholder="체중 kg" required><label class="sr-only" for="goal-weight">목표 체중</label><input id="goal-weight" type="number" min="20" max="300" step="0.1" placeholder="목표 kg"><button type="submit" class="small-button">체중 기록</button><p id="weight-status" class="status" role="status" aria-live="polite"></p></form>
+                    </article>
+                </div>
 
-                <label for="diet-meals">하루 식사 횟수</label>
-                <select id="diet-meals" required>
-                    <option value="">식사 횟수를 선택하세요</option>
-                    <option value="2끼">2끼</option>
-                    <option value="3끼">3끼</option>
-                    <option value="4끼 이상">4끼 이상</option>
-                </select>
+                <div class="dashboard-grid lower-grid">
+                    <article class="panel habit-panel"><div class="panel-heading"><div><p class="panel-kicker">CONSISTENCY</p><h2>나의 습관 캘린더</h2></div><span class="calendar-legend"><i></i>기록한 날</span></div><div class="weekday-row"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div><div id="habit-calendar" class="habit-calendar"></div><p class="panel-footnote">식단 또는 운동을 기록하면 캘린더에 표시돼요.</p></article>
+                    <article class="panel quick-log-panel"><div class="panel-heading"><div><p class="panel-kicker">QUICK ACTION</p><h2>오늘의 식사 기록</h2></div><a class="text-link" href="#meals">전체 기록 <span>→</span></a></div><div class="quick-calorie"><div><strong id="quick-calories">0</strong><span> / 2,000 kcal</span></div><div class="progress-track"><span id="quick-calorie-progress"></span></div></div><div id="today-meal-preview" class="log-preview empty-state">아직 기록된 식사가 없어요.</div><a class="secondary-button" href="#meals">+ 식사 추가하기</a></article>
+                </div>
+            </section>
 
-                <button type="submit" id="diet-button" class="button">AI 식단 추천받기</button>
-                <p id="diet-status" class="status" role="status"></p>
-            </form>
+            <section id="meals" class="page-section content-section">
+                <div class="section-title"><div><p class="eyebrow">NOURISH WITH INTENTION</p><h2>식단 관리</h2><p>먹은 음식을 기록하고 하루 섭취량을 살펴보세요.</p></div><span class="section-count" id="meal-count">오늘 0개 기록</span></div>
+                <div class="dashboard-grid log-grid">
+                    <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">FOOD JOURNAL</p><h3>식사 추가</h3></div></div><form id="meal-form" class="form-grid"><label>식사<select id="meal-type" required><option value="아침">아침</option><option value="점심">점심</option><option value="저녁">저녁</option><option value="간식">간식</option></select></label><label>음식명<input id="meal-name" type="text" maxlength="80" placeholder="예: 현미밥과 구운 연어" required></label><label>칼로리 (kcal)<input id="meal-calories" type="number" min="0" max="10000" step="1" placeholder="예: 520" required></label><button class="primary-button" type="submit">식사 기록 저장 <span>＋</span></button></form></article>
+                    <article class="panel nutrition-panel"><div class="panel-heading"><div><p class="panel-kicker">DAILY INTAKE</p><h3>오늘의 섭취량</h3></div><span class="intake-icon">◉</span></div><div class="nutrition-total"><strong id="meal-total">0</strong><span>kcal</span></div><div class="progress-track large"><span id="meal-progress"></span></div><p id="meal-goal-note" class="panel-footnote">하루 기준 2,000 kcal · 개인별 필요량은 다를 수 있어요.</p></article>
+                </div>
+                <article class="panel list-panel"><div class="panel-heading"><div><p class="panel-kicker">RECENT ENTRIES</p><h3>오늘의 식사</h3></div></div><div id="meal-list" class="entry-list empty-state">오늘 먹은 음식을 기록해 보세요.</div></article>
+            </section>
 
-            <div id="diet-result" class="result-card" aria-live="polite">
-                <h3>나의 맞춤 식단</h3>
-                <div id="diet-result-content"></div>
-            </div>
-        </section>
+            <section id="training" class="page-section content-section">
+                <div class="section-title"><div><p class="eyebrow">MOVE AT YOUR PACE</p><h2>운동 관리</h2><p>운동한 시간과 활동을 기록해 나만의 리듬을 찾아보세요.</p></div><span class="section-count" id="workout-count">이번 주 0회</span></div>
+                <div class="dashboard-grid log-grid">
+                    <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">MOVEMENT LOG</p><h3>운동 기록 추가</h3></div></div><form id="workout-form" class="form-grid"><label>운동 이름<input id="workout-name" type="text" maxlength="60" placeholder="예: 빠르게 걷기" required></label><label>운동 시간 (분)<input id="workout-duration" type="number" min="1" max="600" placeholder="예: 30" required></label><button class="primary-button" type="submit">운동 기록 저장 <span>＋</span></button></form></article>
+                    <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">THIS WEEK</p><h3>이번 주 움직임</h3></div><span class="workout-icon">↗</span></div><div class="nutrition-total"><strong id="workout-total-minutes">0</strong><span>분</span></div><p class="panel-footnote">완벽한 계획보다 꾸준한 움직임이 중요해요.</p></article>
+                </div>
+                <article class="panel list-panel"><div class="panel-heading"><div><p class="panel-kicker">RECENT SESSIONS</p><h3>최근 운동</h3></div></div><div id="workout-list" class="entry-list empty-state">운동을 완료한 뒤 기록해 보세요.</div></article>
+                <details class="planner-details"><summary>맞춤 운동 계획 만들기</summary><p class="details-copy">기존 운동 플래너는 기초 계획을 만들며, AI가 생성한 결과는 아닙니다.</p><form id="exercise-form" class="form-card"><label for="exercise-goal">운동 목표</label><select id="exercise-goal" required><option value="">목표를 선택하세요</option><option value="체중 관리">체중 관리</option><option value="근력 향상">근력 향상</option><option value="체력 향상">체력 향상</option><option value="건강한 생활 습관">건강한 생활 습관</option></select><label for="exercise-level">운동 경험</label><select id="exercise-level" required><option value="">운동 경험을 선택하세요</option><option value="초보">초보</option><option value="중급">중급</option><option value="숙련">숙련</option></select><label for="exercise-time">운동 가능 시간</label><select id="exercise-time" required><option value="">시간을 선택하세요</option><option value="20분">20분</option><option value="30분">30분</option><option value="1시간">1시간</option><option value="1시간 이상">1시간 이상</option></select><label for="exercise-place">운동 장소</label><select id="exercise-place" required><option value="">장소를 선택하세요</option><option value="집">집</option><option value="헬스장">헬스장</option><option value="야외">야외</option></select><button type="submit" id="exercise-button" class="primary-button">운동 계획 확인하기 <span>↗</span></button><p id="exercise-status" class="status" role="status"></p></form><div id="exercise-result" class="result-card" aria-live="polite"><h3>나의 맞춤 운동 계획</h3><div id="exercise-result-content"></div></div></details>
+            </section>
 
-        <section id="exercise" class="section section-alt">
-            <div class="section-heading">
-                <p class="eyebrow">WORKOUT PLANNER</p>
-                <h2>맞춤 운동 계획</h2>
-                <p>운동 목표와 장소, 시간을 기준으로 계획을 확인해 보세요.</p>
-            </div>
+            <section id="report" class="page-section content-section">
+                <div class="section-title"><div><p class="eyebrow">YOUR WEEK, IN FOCUS</p><h2>건강 리포트</h2><p>최근 7일간 쌓인 기록을 한눈에 확인해 보세요.</p></div><span class="section-count" id="report-period"></span></div>
+                <div class="report-grid"><article class="panel report-card"><p class="panel-kicker">WEIGHT CHANGE</p><strong id="report-weight">--</strong><span>kg 변화</span><p id="report-weight-note">체중을 2회 이상 기록하면 변화를 보여드려요.</p></article><article class="panel report-card"><p class="panel-kicker">WORKOUTS</p><strong id="report-workouts">0</strong><span>회 · <b id="report-minutes">0</b>분</span><p>이번 주 운동 기록</p></article><article class="panel report-card"><p class="panel-kicker">MEAL JOURNAL</p><strong id="report-meals">0</strong><span>회 기록</span><p>식사를 기록한 횟수</p></article></div>
+                <article class="panel report-advice"><div class="report-spark">✳</div><div><p class="panel-kicker">A GENTLE NEXT STEP</p><h3>다음 주를 위한 제안</h3><p id="weekly-suggestion">기록을 시작하면 데이터 흐름에 맞춰 실천 가능한 다음 목표를 제안할게요.</p></div><a href="#training" class="text-link">운동 기록하기 <span>→</span></a></article>
+            </section>
 
-            <form id="exercise-form" class="form-card">
-                <label for="exercise-goal">운동 목표</label>
-                <select id="exercise-goal" required>
-                    <option value="">목표를 선택하세요</option>
-                    <option value="체중 관리">체중 관리</option>
-                    <option value="근력 향상">근력 향상</option>
-                    <option value="체력 향상">체력 향상</option>
-                    <option value="건강한 생활 습관">건강한 생활 습관</option>
-                </select>
-
-                <label for="exercise-level">운동 경험</label>
-                <select id="exercise-level" required>
-                    <option value="">운동 경험을 선택하세요</option>
-                    <option value="초보">초보</option>
-                    <option value="중급">중급</option>
-                    <option value="숙련">숙련</option>
-                </select>
-
-                <label for="exercise-time">운동 가능 시간</label>
-                <select id="exercise-time" required>
-                    <option value="">시간을 선택하세요</option>
-                    <option value="20분">20분</option>
-                    <option value="30분">30분</option>
-                    <option value="1시간">1시간</option>
-                    <option value="1시간 이상">1시간 이상</option>
-                </select>
-
-                <label for="exercise-place">운동 장소</label>
-                <select id="exercise-place" required>
-                    <option value="">장소를 선택하세요</option>
-                    <option value="집">집</option>
-                    <option value="헬스장">헬스장</option>
-                    <option value="야외">야외</option>
-                </select>
-
-                <button type="submit" id="exercise-button" class="button">운동 계획 확인하기</button>
-                <p id="exercise-status" class="status" role="status"></p>
-            </form>
-
-            <div id="exercise-result" class="result-card" aria-live="polite">
-                <h3>나의 맞춤 운동 계획</h3>
-                <div id="exercise-result-content"></div>
-            </div>
-        </section>
-
-        <section id="info" class="section">
-            <div class="section-heading">
-                <p class="eyebrow">HEALTHY HABITS</p>
-                <h2>건강한 생활 습관</h2>
-                <p>작은 습관을 꾸준히 실천하는 것이 중요해요.</p>
-            </div>
-
-            <div class="info-grid">
-                <article class="info-card">
-                    <h3>🥗 균형 잡힌 식사</h3>
-                    <p>다양한 식품을 골고루 먹고 규칙적인 식사 습관을 만들어 보세요.</p>
-                </article>
-                <article class="info-card">
-                    <h3>🚶 꾸준한 움직임</h3>
-                    <p>자신의 체력에 맞춰 걷기와 가벼운 근력 운동부터 시작해 보세요.</p>
-                </article>
-                <article class="info-card">
-                    <h3>🌙 충분한 휴식</h3>
-                    <p>규칙적인 수면과 휴식 시간을 확보해 몸의 회복을 도와주세요.</p>
-                </article>
-            </div>
-
-            <p class="disclaimer">이 서비스는 일반적인 건강 관리 정보를 제공하며 의료 진단이나 치료를 대신하지 않습니다.</p>
-        </section>
-    </main>
-
-    <footer>
-        <p>AI 건강관리 코치 · 건강한 하루를 위한 작은 시작</p>
-    </footer>
-
+            <footer class="app-footer"><span>FORMA <i>·</i> HEALTH DASHBOARD</span><span>일반적인 웰니스 정보만 제공하며 의료 진단이나 치료를 대신하지 않습니다.</span></footer>
+        </main>
+    </div>
     <script src="js/script.js"></script>
 </body>
 </html>
