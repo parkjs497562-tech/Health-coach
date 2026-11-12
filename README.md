@@ -59,23 +59,31 @@ git clone https://github.com/parkjs497562-tech/Health-coach.git
 cd Health-coach
 ```
 
-3. 로컬 웹 서버 실행
+3. `.env.example`을 복사해 `.env` 파일을 만들고, 파일을 열어 Google AI Studio에서 발급한 키를 입력합니다.
 
 ```bash
-python -m http.server 8000
+cp .env.example .env
 ```
 
-4. 브라우저 접속
+4. Forma 서버 실행 (Python 3 필요)
+
+```bash
+python3 api/server.py
+```
+
+5. 브라우저 접속
 
 ```text
-http://localhost:8000
+http://127.0.0.1:8000
 ```
 
 ## 🔐 환경 변수 및 보안
 
 - API 키와 개인정보는 GitHub에 공개하지 않습니다.
-- 환경 변수는 `.env` 파일 등을 통해 별도로 관리합니다.
+- Gemini API 키는 서버에서만 읽으며 브라우저 코드로 전달하지 않습니다.
+- 식단 생성에 입력한 건강 정보는 Gemini API로 전송됩니다. 전송 동의를 받은 뒤 요청합니다.
 - `.env` 파일은 `.gitignore`에 등록합니다.
+- 개발 서버는 기본적으로 이 컴퓨터(localhost)에서만 접속할 수 있습니다.
 
 ## 🎯 프로젝트 목표
 

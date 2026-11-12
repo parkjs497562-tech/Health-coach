@@ -23,7 +23,7 @@
                 <a class="nav-link" href="#report"><span class="nav-icon">▤</span> 건강 리포트</a>
             </nav>
             <div class="sidebar-bottom">
-                <div class="privacy-note"><span class="privacy-dot"></span><span>내 기록은 이 기기에 저장돼요</span></div>
+                <div class="privacy-note"><span class="privacy-dot"></span><span>건강 기록은 이 기기에 저장돼요</span></div>
                 <a class="profile" href="#settings"><span class="avatar">F</span><span><strong>나의 건강 플랜</strong><small>개인 대시보드</small></span><span class="profile-more">···</span></a>
             </div>
         </aside>
@@ -69,6 +69,21 @@
                     <article class="panel"><div class="panel-heading"><div><p class="panel-kicker">FOOD JOURNAL</p><h3>식사 추가</h3></div></div><form id="meal-form" class="form-grid"><label>식사<select id="meal-type" required><option value="아침">아침</option><option value="점심">점심</option><option value="저녁">저녁</option><option value="간식">간식</option></select></label><label>음식명<input id="meal-name" type="text" maxlength="80" placeholder="예: 현미밥과 구운 연어" required></label><label>칼로리 (kcal)<input id="meal-calories" type="number" min="0" max="10000" step="1" placeholder="예: 520" required></label><button class="primary-button" type="submit">식사 기록 저장 <span>＋</span></button></form></article>
                     <article class="panel nutrition-panel"><div class="panel-heading"><div><p class="panel-kicker">DAILY INTAKE</p><h3>오늘의 섭취량</h3></div><span class="intake-icon">◉</span></div><div class="nutrition-total"><strong id="meal-total">0</strong><span>kcal</span></div><div class="progress-track large"><span id="meal-progress"></span></div><p id="meal-goal-note" class="panel-footnote">하루 기준 2,000 kcal · 개인별 필요량은 다를 수 있어요.</p></article>
                 </div>
+                <details class="planner-details meal-planner" open>
+                    <summary>나에게 맞는 식단 만들기 <span class="planner-subtitle">목표와 선호 음식을 반영한 간단한 7일 플랜</span></summary>
+                    <p class="details-copy">목표와 음식 선호를 바탕으로 7일 메뉴와 장보기 목록을 만들어요. 입력한 정보는 Google Gemini로 전송됩니다. 결과가 오기 전 기본 예시를 먼저 보여드려요.</p>
+                    <form id="meal-plan-form" class="form-card planner-form">
+                        <div class="planner-fields">
+                            <label>식단 목표<select name="goal"><option>건강한 한 끼</option><option>체중 유지</option><option>체중 감량 지원</option><option>근육 형성 지원</option></select></label>
+                            <label class="wide-field">알레르기·피해야 할 음식<input name="avoid" maxlength="200" placeholder="예: 땅콩, 유제품 (없으면 비워 두세요)"></label>
+                            <label class="wide-field">좋아하거나 싫어하는 음식<input name="preferences" maxlength="200" placeholder="예: 두부 좋아함, 버섯 제외"></label>
+                        </div>
+                        <label class="consent-line"><input name="consent" type="checkbox" required> 입력 정보가 식단 생성을 위해 Google Gemini로 전송됨을 확인했습니다.</label>
+                        <button type="submit" id="meal-plan-button" class="primary-button">Gemini로 7일 식단 만들기 <span>✳</span></button>
+                        <p class="status" id="meal-plan-status" role="status" aria-live="polite"></p>
+                    </form>
+                    <div id="meal-plan-result" class="result-card meal-plan-result" aria-live="polite"><div class="plan-result-heading"><div><p class="panel-kicker">YOUR WEEKLY MEAL IDEA</p><h3>나의 7일 식단</h3></div><div class="plan-copy-actions"><button type="button" class="small-button" id="copy-plan-prompt">요청 정보 복사</button><span id="copy-plan-status" role="status" aria-live="polite"></span></div></div><div id="meal-plan-content"></div><p class="plan-disclaimer">일반적인 식사 아이디어이며 의료·영양 처방이 아닙니다. 알레르기 유발 성분과 제품 표시를 꼭 확인하세요.</p></div>
+                </details>
                 <article class="panel list-panel"><div class="panel-heading"><div><p class="panel-kicker">RECENT ENTRIES</p><h3>오늘의 식사</h3></div></div><div id="meal-list" class="entry-list empty-state">오늘 먹은 음식을 기록해 보세요.</div></article>
             </section>
 

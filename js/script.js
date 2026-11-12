@@ -309,6 +309,145 @@ document.getElementById("workout-form").addEventListener("submit", event => {
     renderAll();
 });
 
+let latestMealPlanPrompt = "";
+function makeQuickMealFallback(profile) {
+    const preferenceExclusions = [...(profile.preferences || "").matchAll(/([^,，、\s]+)\s*(?:제외|싫어함|싫어|못 먹)/g)].map(match => match[1]);
+    const avoidText = `${profile.avoid || ""} ${preferenceExclusions.join(" ")}`.toLowerCase();
+    const likedFoods = (profile.preferences || "").split(/[,，、]+/)
+        .filter(item => !/(제외|싫어|못 먹)/.test(item))
+        .map(item => item.replace(/\s*(좋아함|좋아해요|선호해요?)\s*/g, "").trim());
+    const meals = {
+        "아침": [
+            { name: "단호박죽과 제철 과일", tags: ["단호박", "쌀", "과일"] },
+            { name: "삶은 달걀, 밥과 오이", tags: ["달걀", "계란", "쌀"] },
+            { name: "두부 채소덮밥", tags: ["두부", "콩", "대두"] },
+            { name: "바나나 오트밀", tags: ["바나나", "귀리", "오트"] },
+            { name: "고구마와 삶은 달걀", tags: ["고구마", "달걀", "계란"] },
+            { name: "감자·채소죽", tags: ["감자", "쌀", "채소"] },
+            { name: "닭고기 채소죽", tags: ["닭", "쌀", "채소"] }
+        ],
+        "점심": [
+            { name: "닭고기 채소덮밥", tags: ["닭", "쌀", "채소"] },
+            { name: "두부 채소덮밥", tags: ["두부", "콩", "대두"] },
+            { name: "연어와 밥, 익힌 채소", tags: ["연어", "생선", "쌀"] },
+            { name: "소고기 채소볶음과 밥", tags: ["소고기", "쌀", "채소"] },
+            { name: "달걀 채소비빔밥", tags: ["달걀", "계란", "쌀"] },
+            { name: "감자·콩 채소덮밥", tags: ["감자", "콩", "대두"] },
+            { name: "돼지고기 채소구이와 밥", tags: ["돼지고기", "쌀", "채소"] }
+        ],
+        "저녁": [
+            { name: "감자·채소 닭고기찜과 밥", tags: ["닭", "쌀", "채소"] },
+            { name: "달걀 채소볶음밥", tags: ["달걀", "계란", "쌀"] },
+            { name: "버섯 채소밥과 두부", tags: ["버섯", "두부", "콩", "대두"] },
+            { name: "흰살생선과 밥, 채소찜", tags: ["생선", "쌀", "채소"] },
+            { name: "소고기 감자조림과 밥", tags: ["소고기", "감자", "쌀"] },
+            { name: "렌틸콩 채소밥", tags: ["렌틸콩", "콩", "쌀"] },
+            { name: "돼지고기 채소볶음과 밥", tags: ["돼지고기", "쌀", "채소"] }
+        ]
+    };
+    const pickedMeals = [];
+    const dayLines = Array.from({ length: 7 }, (_, day) => {
+        const lines = Object.entries(meals).map(([type, options], mealIndex) => {
+            const safe = options.filter(item => !item.tags.some(tag => avoidText.includes(tag)));
+            const liked = safe.filter(item => likedFoods.some(word => word.length > 1 && item.name.includes(word)));
+            const choices = liked.length ? liked : safe;
+            const choice = choices[(day + mealIndex) % Math.max(1, choices.length)];
+            if (choice) pickedMeals.push(choice.name);
+            return `${type}: ${choice ? `${choice.name} (1인분)` : "제외 식품과 겹치지 않는 메뉴를 고르지 못했어요. 제외 조건을 확인해 주세요."}`;
+        });
+        return `${day + 1}일차\n${lines.join("\n")}`;
+    });
+    const shopping = [...new Set(pickedMeals.join(" ").match(/쌀|단호박|과일|달걀|계란|두부|바나나|귀리|오트|고구마|감자|닭고기|닭|소고기|돼지고기|연어|생선|채소|버섯|렌틸콩|콩/g) || [])];
+    return `7일 기본 예시\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 알레르기 성분은 제품 표시와 조리 환경까지 꼭 확인하세요.`;
+}
+
+function renderMealPlan(rawText) {
+    const days = [];
+    const shopping = [];
+    let currentDay = null;
+    const addMealLines = (day, text) => {
+        const chunks = text.split(/\s*(?:\/|\|)\s*(?=(?:아침|점심|저녁|간식)\s*[:：])/);
+        chunks.forEach(chunk => {
+            const meal = chunk.trim().match(/^(아침|점심|저녁|간식)\s*[:：]\s*(.+)$/);
+            if (meal) day.meals.push({ type: meal[1], name: meal[2].trim() });
+        });
+    };
+
+    String(rawText).split(/\r?\n/).forEach(sourceLine => {
+        const line = sourceLine.replace(/^\\?\s*[-*•]+\s*/, "").replace(/\*\*/g, "").trim();
+        if (!line) return;
+        const grocery = line.match(/^(?:장보기(?:\s*재료)?|필요한\s*재료)\s*[:：]\s*(.*)$/);
+        if (grocery) {
+            shopping.push(...grocery[1].split(/[,，、]/).map(item => item.trim()).filter(Boolean));
+            currentDay = null;
+            return;
+        }
+        const dayMatch = line.match(/^(\d+)\s*일차\s*[:：]?\s*(.*)$/);
+        if (dayMatch) {
+            currentDay = { number: dayMatch[1], meals: [] };
+            days.push(currentDay);
+            addMealLines(currentDay, dayMatch[2]);
+            return;
+        }
+        if (currentDay) addMealLines(currentDay, line);
+    });
+
+    if (!days.length) return `<pre class="ai-plan-text">${escapeHTML(rawText)}</pre>`;
+    const dayCards = days.map(day => `<article class="ai-day-card"><h4>${escapeHTML(day.number)}일차</h4>${day.meals.length
+        ? `<ul>${day.meals.map(meal => `<li><span class="ai-meal-label">${escapeHTML(meal.type)}</span><span>${escapeHTML(meal.name)}</span></li>`).join("")}</ul>`
+        : `<p class="ai-day-empty">메뉴를 읽지 못했어요. 다시 생성해 주세요.</p>`}</article>`).join("");
+    const shoppingCard = shopping.length
+        ? `<section class="ai-shopping-card"><h4>장보기 재료</h4><ul class="ai-shopping-list">${[...new Set(shopping)].map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul></section>`
+        : "";
+    return `<div class="ai-plan-layout"><div class="ai-day-grid">${dayCards}</div>${shoppingCard}</div>`;
+}
+
+document.getElementById("meal-plan-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    const profile = Object.fromEntries(new FormData(event.currentTarget).entries());
+    latestMealPlanPrompt = Object.entries(profile).filter(([key]) => key !== "consent")
+        .map(([key, value]) => `${key}: ${value || "없음"}`).join("\n");
+    const status = document.getElementById("meal-plan-status");
+    const button = document.getElementById("meal-plan-button");
+    button.disabled = true;
+    button.textContent = "Gemini가 7일 식단을 만들고 있어요…";
+    status.textContent = "기본 7일 예시를 먼저 보여드려요. Gemini에 간단한 식단을 요청하고 있어요.";
+    const content = document.getElementById("meal-plan-content");
+    content.innerHTML = renderMealPlan(makeQuickMealFallback(profile));
+    content.classList.add("ai-plan-rendered");
+    content.classList.remove("ai-plan-error");
+    document.getElementById("meal-plan-result").classList.add("show");
+    try {
+        const response = await fetch("/api/meal-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(Object.fromEntries(Object.entries(profile).filter(([key]) => key !== "consent")))
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "식단 생성에 실패했어요.");
+        content.innerHTML = renderMealPlan(data.plan);
+        content.classList.add("ai-plan-rendered");
+        status.textContent = "Gemini가 7일 식단을 만들었어요. 알레르기와 제품 표시를 확인해 주세요.";
+    } catch (error) {
+        const message = error.message || "서버에 연결할 수 없어요. 실행 안내를 확인해 주세요.";
+        status.textContent = `Gemini 응답이 지연되어 기본 7일 예시를 표시했어요. ${message}`;
+    } finally {
+        button.disabled = false;
+        button.innerHTML = 'Gemini로 7일 식단 만들기 <span>✳</span>';
+    }
+    document.getElementById("meal-plan-result").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.getElementById("copy-plan-prompt").addEventListener("click", async event => {
+    const status = document.getElementById("copy-plan-status");
+    try {
+        await navigator.clipboard.writeText(latestMealPlanPrompt);
+        status.textContent = "입력 정보 복사 완료";
+    } catch {
+        status.textContent = "복사할 수 없어요. HTTPS 또는 localhost에서 시도해 주세요.";
+    }
+});
+
 document.addEventListener("click", event => {
     const deleteButton = event.target.closest(".delete-entry");
     if (deleteButton) {

@@ -462,6 +462,44 @@ input:focus, select:focus, textarea:focus { border-color: #9ecb62; box-shadow: 0
 .planner-details { margin-top: 15px; border: 1px solid var(--line); border-radius: 7px; background: #151c18; }
 .planner-details summary { padding: 14px 16px; color: #c4d0c7; font-size: 11px; font-weight: 600; cursor: pointer; }
 .planner-details[open] summary { border-bottom: 1px solid var(--line); }
+.meal-planner { margin: 18px 0; }
+.meal-planner summary { color: var(--mint); font-size: 13px; }
+.planner-subtitle { margin-left: 8px; color: var(--muted); font-size: 10px; font-weight: 400; }
+.details-copy { padding: 12px 16px 0; color: var(--muted); font-size: 11px; }
+.planner-form { max-width: none; }
+.planner-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+.planner-fields label { display: flex; flex-direction: column; gap: 5px; }
+.planner-fields .wide-field { grid-column: 1 / -1; }
+.consent-line { display: flex; align-items: center; gap: 8px; margin-top: 14px !important; }
+.consent-line input { width: 16px; min-height: 16px; accent-color: var(--mint); }
+.meal-plan-result { max-width: none; }
+.plan-result-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.plan-copy-actions { display: flex; align-items: center; gap: 9px; }
+.plan-copy-actions span { color: var(--muted); font-size: 10px; }
+.plan-result-heading h3 { margin: 0; }
+.plan-profile { padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #131a16; }
+.plan-profile p + p { margin-top: 7px; }
+.plan-week { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 12px; }
+.plan-day { padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #151c18; }
+.plan-day h4, .plan-shopping h4 { margin: 0 0 8px; color: var(--mint); }
+.plan-day ul { padding: 0; list-style: none; }
+.plan-day li { display: flex; gap: 8px; padding: 5px 0; border-top: 1px solid #29342d; }
+.plan-day li strong { min-width: 32px; color: #dce6de; }
+.plan-day li span { color: var(--muted); }
+.plan-shopping { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; }
+.plan-disclaimer { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted) !important; }
+.ai-plan-text { padding: 12px; border: 1px solid var(--line); border-radius: 6px; color: #bac5bd; font-size: 12px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-plan-error { border-color: #7c5247; color: #ffb09b; }
+.ai-day-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.ai-day-card, .ai-shopping-card { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #151c18; }
+.ai-day-card h4, .ai-shopping-card h4 { margin: 0 0 7px; color: var(--mint); font-size: 12px; }
+.ai-day-card ul { padding: 0; list-style: none; }
+.ai-day-card li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 7px; padding: 6px 0; border-top: 1px solid #29342d; color: #bac5bd; font-size: 11px; line-height: 1.55; }
+.ai-meal-label { color: #e0e8e2; font-weight: 700; }
+.ai-day-empty { color: #ffb09b; font-size: 11px; }
+.ai-shopping-card { margin-top: 10px; }
+.ai-shopping-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 !important; list-style: none; }
+.ai-shopping-list li { padding: 3px 8px; border: 1px solid #35443a; border-radius: 20px; color: #bac5bd; font-size: 10px; }
 .details-copy { max-width: 680px; margin: 15px auto 0; color: var(--muted); font-size: 10px; }
 .form-card { max-width: 680px; margin-top: 14px; padding: 20px; border-color: var(--line); border-radius: 7px; background: var(--surface); box-shadow: none; }
 .form-card label { margin-top: 3px; color: #aab6ad; font-size: 10px; }
@@ -528,6 +566,12 @@ input:focus, select:focus, textarea:focus { border-color: #9ecb62; box-shadow: 0
     .report-advice { align-items: flex-start; flex-wrap: wrap; }
     .report-advice .text-link { margin-left: 54px; }
     .app-footer { flex-direction: column; }
+}
+@media (max-width: 600px) {
+    .planner-fields, .plan-week, .ai-day-grid { grid-template-columns: 1fr; }
+    .plan-result-heading { align-items: flex-start; flex-direction: column; }
+    .plan-copy-actions { flex-wrap: wrap; }
+    .planner-subtitle { display: block; margin: 4px 0 0; }
 }
 
 @media (max-width: 420px) {
