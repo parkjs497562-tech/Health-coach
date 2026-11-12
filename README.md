@@ -1,99 +1,83 @@
-# 🏋️ AI Health Coach
+# Forma — AI Health Coach
 
-**AI 기반 개인 맞춤형 건강 관리 웹 서비스**
+Forma is a responsive personal wellness dashboard for tracking meals, exercise, and weight. Its meal planner sends a user's goal and food preferences to Gemini and displays a concise seven-day plan.
 
-AI 기술을 활용하여 사용자의 건강 관리와 운동 습관 형성을 돕는 웹 프로젝트입니다.
+## Pages and features
 
-다크 테마 기반의 직관적인 UI를 통해 건강 관리 정보를 확인하고, AI를 활용한 개인 맞춤형 건강 관리 서비스로 확장하는 것을 목표로 합니다.
+The site is a single-page app with four menu-linked sections:
 
-## 📌 프로젝트 소개
+- **Dashboard:** weight chart, daily intake summary, weekly exercise, and habit calendar
+- **Meal management:** meal logging and Gemini-generated seven-day meal ideas
+- **Exercise management:** exercise logging and a basic workout planner
+- **Health report:** weekly summaries of weight, meals, and exercise
 
-AI Health Coach는 식단, 운동, 체중 등 개인 건강 정보를 체계적으로 관리하고 분석할 수 있도록 기획한 웹 서비스입니다.
+Health logs stay in browser local storage. Meal-planner inputs are sent to Gemini only after the user checks the consent box. The Gemini request uses `store: false`. The app also shows a basic meal-plan example while waiting for the API response.
 
-단순한 건강 정보 제공을 넘어 AI를 활용하여 사용자에게 적합한 건강 관리 방향을 제안하는 서비스를 지향합니다.
+## Tech stack
 
-## ✨ 주요 특징
-
-- **Dark Mode UI**: 어두운 배경 기반의 프리미엄 디자인
-- **Health Dashboard**: 건강 관리 정보를 한눈에 확인하는 대시보드
-- **AI Health Coach**: AI 기반 맞춤형 건강 관리 기능
-- **Responsive Design**: 다양한 화면 크기를 고려한 UI 구성
-- **Health Management**: 식단 및 운동 관리 기능 확장
-
-※ 세부 기능은 실제 구현 및 API 연동 상태에 따라 업데이트할 예정입니다.
-
-## 🛠️ 기술 스택
-
-| 구분 | 기술 |
+| Layer | Technology |
 |---|---|
-| Frontend | HTML, CSS, JavaScript |
-| Backend | Python (기존 프로젝트 기반, 현재 구성 확인 필요) |
-| AI | AI API 연동 확장 |
-| Version Control | Git, GitHub |
-| Development Tool | Visual Studio Code, OpenAI Codex |
+| Frontend | HTML, CSS, vanilla JavaScript |
+| Local API | Python standard library HTTP server |
+| Deployed API | Vercel Python Function |
+| Generative AI | Google Gemini Interactions API |
+| Hosting | Vercel |
 
-## 📂 프로젝트 구조
+## Project structure
 
 ```text
 Health-coach/
 ├── index.html
-├── css/
-│   └── style.css
-├── js/
-│   └── script.js
+├── css/style.css
+├── js/script.js
 ├── api/
-└── README.md
+│   ├── server.py       # Local development server
+│   └── meal-plan.py    # Vercel serverless endpoint: /api/meal-plan
+├── docs/
+│   ├── service-plan.md
+│   └── evidence/       # Submission screenshot instructions
+└── vercel.json
 ```
 
-## 🚀 실행 방법
+## Run locally
 
-1. GitHub 저장소 Clone
+1. Install Python 3.9 or newer.
+2. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` to a key from Google AI Studio.
+3. Start the local server:
 
-```bash
-git clone https://github.com/parkjs497562-tech/Health-coach.git
-```
+   ```bash
+   python3 api/server.py
+   ```
 
-2. 프로젝트 폴더 이동
+4. Open <http://127.0.0.1:8000>.
 
-```bash
-cd Health-coach
-```
+Never put the API key in HTML or JavaScript, and do not commit `.env`.
 
-3. `.env.example`을 복사해 `.env` 파일을 만들고, 파일을 열어 Google AI Studio에서 발급한 키를 입력합니다.
+## Deploy to Vercel
 
-```bash
-cp .env.example .env
-```
+1. Push this repository to GitHub and import it from the Vercel dashboard.
+2. Keep the project root directory as `.`. The site files are served as static assets and `api/meal-plan.py` is deployed as `/api/meal-plan`.
+3. In **Project Settings → Environment Variables**, add `GEMINI_API_KEY` for Production (and Preview if needed).
+4. Redeploy, then test the meal planner on the deployed domain.
 
-4. Forma 서버 실행 (Python 3 필요)
+`vercel.json` sets a 60-second maximum duration for the Gemini function. Vercel's Hobby plan permits up to 60 seconds; see [Vercel Python Functions](https://vercel.com/docs/functions/runtimes/python).
 
-```bash
-python3 api/server.py
-```
+### Deployment URL
 
-5. 브라우저 접속
+Not deployed yet. Add the production URL here after importing and deploying the project, for example `https://<your-project>.vercel.app`.
 
-```text
-http://127.0.0.1:8000
-```
+## Environment variables
 
-## 🔐 환경 변수 및 보안
+| Name | Required | Purpose |
+|---|---:|---|
+| `GEMINI_API_KEY` | Yes | Server-side Gemini API key |
+| `GEMINI_MODEL` | No | Override the default `gemini-3.5-flash-lite` model |
+| `HOST` / `PORT` | Local only | Local server bind address (defaults to `127.0.0.1:8000`) |
 
-- API 키와 개인정보는 GitHub에 공개하지 않습니다.
-- Gemini API 키는 서버에서만 읽으며 브라우저 코드로 전달하지 않습니다.
-- 식단 생성에 입력한 건강 정보는 Gemini API로 전송됩니다. 전송 동의를 받은 뒤 요청합니다.
-- `.env` 파일은 `.gitignore`에 등록합니다.
-- 개발 서버는 기본적으로 이 컴퓨터(localhost)에서만 접속할 수 있습니다.
+## Service plan and evidence
 
-## 🎯 프로젝트 목표
+See [docs/service-plan.md](docs/service-plan.md) for the target users, page structure, AI input/output, and failure behavior. Screenshot requirements and capture names are listed in [docs/evidence/README.md](docs/evidence/README.md).
 
-- AI 기반 개인 맞춤형 건강 관리 기능 구현
-- 사용자 건강 데이터의 체계적인 기록 및 분석
-- 직관적이고 사용하기 편리한 UI/UX 구현
-- 지속적으로 기능을 개선하여 완성도 높은 웹 서비스 제작
+## Safety note
 
-## 👨‍💻 개발
-
-- Project: AI Health Coach
-- Repository: https://github.com/parkjs497562-tech/Health-coach
-- Development: VS Code, OpenAI Codex
+Meal plans are general food ideas, not medical or nutrition prescriptions. Users must verify allergens and product labels. People with health conditions, pregnancy, medication use, or eating-disorder history should consult a qualified clinician or dietitian.
