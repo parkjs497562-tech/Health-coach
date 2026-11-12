@@ -64,7 +64,9 @@ Never put the API key in HTML or JavaScript, and do not commit `.env`.
 
 ### Deployment URL
 
-Not deployed yet. Add the production URL here after importing and deploying the project, for example `https://<your-project>.vercel.app`.
+Current preview deployment: <https://health-coach-8ryzilxcr-parkjs497562-9431.vercel.app>.
+
+This preview URL currently requires Vercel Authentication, so it is not accessible to an external reviewer. Add the public production domain from the Vercel project's **Settings → Domains** here after configuring deployment protection for public production access.
 
 ## Environment variables
 
