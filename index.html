@@ -68,6 +68,13 @@
                             </select>
                             <label class="sr-only" for="goal-weight">목표 체중</label>
                             <input id="goal-weight" type="number" min="20" max="300" step="0.1" placeholder="목표 kg">
+                            <label class="sr-only" for="goal-speed">감량 속도</label>
+                            <select id="goal-speed">
+                                <option value="1개월 4kg 감량">1개월 4kg 감량</option>
+                                <option value="3개월 10kg 감량">3개월 10kg 감량</option>
+                                <option value="체중 유지">체중 유지</option>
+                                <option value="점진적 감량">점진적 감량</option>
+                            </select>
                             <button type="submit" class="small-button">체중 기록</button>
                             <div class="bmi-chip" aria-live="polite">
                                 <span>BMI</span>
@@ -97,7 +104,6 @@
                     <form id="meal-plan-form" class="form-card planner-form">
                         <div class="planner-fields">
                             <label>식단 목표<select name="goal"><option>건강한 한 끼</option><option>체중 유지</option><option>체중 감량 지원</option><option>근육 형성 지원</option></select></label>
-                            <label>감량 속도<select name="goalSpeed"><option>1개월 4kg 감량</option><option>3개월 10kg 감량</option><option>체중 유지</option><option>점진적 감량</option></select></label>
                             <label>현재 키(cm)<input name="height" type="number" min="100" max="250" step="1" placeholder="예: 168"></label>
                             <label>성별<select name="sex"><option value="">선택</option><option>남성</option><option>여성</option><option>선택 안 함</option></select></label>
                             <label>단백질 쉐이크<input name="proteinShake" maxlength="80" placeholder="예: 하루 1회, 아침에 마심"></label>

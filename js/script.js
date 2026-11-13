@@ -3,7 +3,14 @@ const CALORIE_GOAL = 2000;
 const today = getDateKey(new Date());
 let chartRange = 7;
 
-const emptyState = { weights: [], meals: [], workouts: [], goalWeight: null, profile: { heightCm: null, sex: "" } };
+const emptyState = {
+    weights: [],
+    meals: [],
+    workouts: [],
+    goalWeight: null,
+    goalSpeed: "1개월 4kg 감량",
+    profile: { heightCm: null, sex: "" }
+};
 let state = loadState();
 
 function loadState() {
@@ -16,6 +23,9 @@ function loadState() {
             goalWeight: Number.isFinite(Number(saved.goalWeight)) && saved.goalWeight !== null
                 ? Number(saved.goalWeight)
                 : null,
+            goalSpeed: typeof saved.goalSpeed === "string" && saved.goalSpeed.trim()
+                ? saved.goalSpeed
+                : "1개월 4kg 감량",
             profile: saved.profile && typeof saved.profile === "object"
                 ? {
                     heightCm: Number.isFinite(Number(saved.profile.heightCm)) ? Number(saved.profile.heightCm) : null,
@@ -274,7 +284,7 @@ function getMealPlanProfile(formElement) {
     const bmi = weight !== null && Number.isFinite(height) && height > 0 ? calculateBMI(weight, height) : null;
     return {
         ...profile,
-        goalSpeed: profile.goalSpeed || "1개월 4kg 감량",
+        goalSpeed: state.goalSpeed || "1개월 4kg 감량",
         bmi: bmi === null ? "미입력" : bmi.toFixed(1),
         height: String(height > 0 ? height : state.profile.heightCm ?? ""),
         sex,
@@ -284,7 +294,7 @@ function getMealPlanProfile(formElement) {
 
 function makeQuickMealFallback(profile) {
     const avoidText = `${profile.avoid || ""} ${(profile.preferences || "")}`.toLowerCase();
-    const goalSpeed = String(profile.goalSpeed || "1개월 4kg 감량");
+    const goalSpeed = String(profile.goalSpeed || state.goalSpeed || "1개월 4kg 감량");
     const sex = String(profile.sex || state.profile.sex || "미상");
     const height = Number(profile.height || state.profile.heightCm || 0);
     const bmi = Number(profile.bmi || 0);
@@ -344,6 +354,9 @@ if (state.profile.heightCm) {
 if (state.profile.sex) {
     document.getElementById("sex-input").value = state.profile.sex;
 }
+if (state.goalSpeed) {
+    document.getElementById("goal-speed").value = state.goalSpeed;
+}
 
 document.getElementById("weight-form").addEventListener("submit", event => {
     event.preventDefault();
@@ -352,6 +365,7 @@ document.getElementById("weight-form").addEventListener("submit", event => {
     const goalInput = document.getElementById("goal-weight").value;
     const heightInput = Number(document.getElementById("height-input").value);
     const sexInput = document.getElementById("sex-input").value;
+    const speedInput = document.getElementById("goal-speed").value;
     const status = document.getElementById("weight-status");
     if (!Number.isFinite(weight) || weight < 20 || weight > 300) {
         status.textContent = "체중을 20~300 kg 범위에서 입력해 주세요.";
@@ -370,11 +384,12 @@ document.getElementById("weight-form").addEventListener("submit", event => {
     if (existing >= 0) state.weights[existing] = record;
     else state.weights.push(record);
     if (goalInput) state.goalWeight = Number(goalInput);
+    state.goalSpeed = speedInput || state.goalSpeed;
     if (document.getElementById("height-input").value) state.profile.heightCm = heightInput;
     if (sexInput) state.profile.sex = sexInput;
     const saved = saveState();
     status.textContent = saved
-        ? `${date} 체중 ${weight.toFixed(1)} kg을 기록했어요. ${state.profile.heightCm ? `BMI ${calculateBMI(weight, state.profile.heightCm).toFixed(1)}` : "키 정보가 반영됐어요."}`
+        ? `${date} 체중 ${weight.toFixed(1)} kg을 기록했어요. 목표: ${state.goalSpeed}. ${state.profile.heightCm ? `BMI ${calculateBMI(weight, state.profile.heightCm).toFixed(1)}` : "키 정보가 반영됐어요."}`
         : "기록했지만 브라우저 저장이 차단됐어요. localhost에서 열어 주세요.";
     document.getElementById("weight-input").value = "";
     renderAll();
