@@ -458,11 +458,14 @@ document.getElementById("meal-plan-form").addEventListener("submit", async event
     content.classList.add("ai-plan-rendered");
     content.classList.remove("ai-plan-error");
     document.getElementById("meal-plan-result").classList.add("show");
+    const controller = new AbortController();
+    const requestTimeout = setTimeout(() => controller.abort(), 55_000);
     try {
         const response = await fetch("/api/meal-plan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(profile)
+            body: JSON.stringify(profile),
+            signal: controller.signal
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "식단 생성에 실패했어요.");
@@ -470,9 +473,12 @@ document.getElementById("meal-plan-form").addEventListener("submit", async event
         content.classList.add("ai-plan-rendered");
         status.textContent = "Groq가 3일 식단을 만들었어요. 알레르기와 제품 표시를 확인해 주세요.";
     } catch (error) {
-        const message = error.message || "서버에 연결할 수 없어요. 실행 안내를 확인해 주세요.";
+        const message = controller.signal.aborted
+            ? "요청이 55초 동안 완료되지 않아 중단했어요. 서버의 GROQ_API_KEY와 연결 상태를 확인해 주세요."
+            : error.message || "서버에 연결할 수 없어요. 실행 안내를 확인해 주세요.";
         status.textContent = `Groq 응답이 지연되어 기본 3일 예시를 표시했어요. ${message}`;
     } finally {
+        clearTimeout(requestTimeout);
         button.disabled = false;
         button.innerHTML = 'Groq로 3일 식단 만들기 <span>✳</span>';
     }
