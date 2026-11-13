@@ -8,10 +8,19 @@ const emptyState = {
     meals: [],
     workouts: [],
     goalWeight: null,
-    goalSpeed: "1개월 4kg 감량",
+    goalSpeed: "점진적 감량",
     profile: { heightCm: null, sex: "" }
 };
 let state = loadState();
+
+function normalizeGoalSpeed(value) {
+    if (typeof value !== "string") return "점진적 감량";
+    const trimmed = value.trim();
+    if (!trimmed) return "점진적 감량";
+    if (["점진적 감량", "균형적 감량", "체중 유지", "근육형성"].includes(trimmed)) return trimmed;
+    if (trimmed.includes("1개월") || trimmed.includes("3개월") || trimmed.includes("kg") || trimmed.includes("감량")) return "점진적 감량";
+    return trimmed;
+}
 
 function loadState() {
     try {
@@ -23,9 +32,7 @@ function loadState() {
             goalWeight: Number.isFinite(Number(saved.goalWeight)) && saved.goalWeight !== null
                 ? Number(saved.goalWeight)
                 : null,
-            goalSpeed: typeof saved.goalSpeed === "string" && saved.goalSpeed.trim()
-                ? saved.goalSpeed
-                : "1개월 4kg 감량",
+            goalSpeed: normalizeGoalSpeed(saved.goalSpeed),
             profile: saved.profile && typeof saved.profile === "object"
                 ? {
                     heightCm: Number.isFinite(Number(saved.profile.heightCm)) ? Number(saved.profile.heightCm) : null,
@@ -284,7 +291,7 @@ function getMealPlanProfile(formElement) {
     const bmi = weight !== null && Number.isFinite(height) && height > 0 ? calculateBMI(weight, height) : null;
     return {
         ...profile,
-        goalSpeed: state.goalSpeed || "1개월 4kg 감량",
+        goalSpeed: normalizeGoalSpeed(state.goalSpeed || "점진적 감량"),
         bmi: bmi === null ? "미입력" : bmi.toFixed(1),
         height: String(height > 0 ? height : state.profile.heightCm ?? ""),
         sex,
@@ -294,19 +301,21 @@ function getMealPlanProfile(formElement) {
 
 function makeQuickMealFallback(profile) {
     const avoidText = `${profile.avoid || ""} ${(profile.preferences || "")}`.toLowerCase();
-    const goalSpeed = String(profile.goalSpeed || state.goalSpeed || "1개월 4kg 감량");
+    const goalSpeed = normalizeGoalSpeed(String(profile.goalSpeed || state.goalSpeed || "점진적 감량"));
     const sex = String(profile.sex || state.profile.sex || "미상");
     const height = Number(profile.height || state.profile.heightCm || 0);
     const bmi = Number(profile.bmi || 0);
     const proteinShake = String(profile.proteinShake || "하루 1회");
-    const baseline = goalSpeed.includes("10kg") || goalSpeed.includes("3개월")
-        ? "3개월 10kg 감량 목표로는 저열량 고단백 중심으로, 하루 1회 단백질 쉐이크를 필수처럼 넣어 식사 간격을 유지"
-        : goalSpeed.includes("4kg") || goalSpeed.includes("1개월")
-            ? "1개월 4kg 감량 목표로는 단백질을 충분히 섭취하며, 단백질 쉐이크를 하루 한 번으로 식사 대용 또는 간식 대체"
-            : "체중 감량은 매일 일정한 단백질 섭취와 가볍게 움직임을 유지하면서 천천히 진행";
+    const baseline = goalSpeed.includes("체중 유지")
+        ? "체중 유지 목표로는 에너지 균형을 유지하면서 단백질과 채소 중심으로 하루를 구성하는 것이 가장 안정적"
+        : goalSpeed.includes("근육") || goalSpeed.includes("형성")
+            ? "근육형성 목표로는 단백질을 충분히 섭취하고, 단백질 쉐이크를 운동 후나 아침에 활용해 영양 균형을 맞추는 쪽이 좋아요"
+            : goalSpeed.includes("균형적")
+                ? "균형적 감량 목표로는 식사량을 크게 줄이기보다 단백질과 채소를 중심으로 꾸준하게 유지하는 방식이 좋습니다"
+                : "점진적 감량 목표로는 가볍게 포만감을 주는 단백질 중심 식사와 하루 1회 단백질 쉐이크를 조합해 꾸준히 이어가는 것이 가장 현실적";
     const shakeNote = /매일|하루/.test(proteinShake)
         ? "하루 1회 단백질 쉐이크는 아침 또는 오후 간식 시간에 넣고, 점심/저녁은 단백질 + 채소 + 복합 탄수화물 중심으로 구성"
-        : "단백질 쉐이크를 3~5회/주로 넣어도 되고, 하루 1회만 생활화해도 충분히 보완 가능";
+        : "단백질 쉐이크는 3~5회/주로 넣어도 되고, 하루 1회만 생활화해도 충분히 보완 가능";
     const meals = {
         "아침": [
             { name: "그릭요거트 + 바나나 + 귀리 + 단백질 쉐이크", tags: ["단백질", "요거트", "바나나", "귀리"] },
@@ -341,7 +350,7 @@ function makeQuickMealFallback(profile) {
     const shopping = [...new Set(pickedMeals.join(" ").match(/단백질|요거트|바나나|귀리|달걀|두부|닭가슴살|닭|연어|생선|채소|고구마|버섯|현미|쌀|과일|콩나물|소고기/g) || [])];
     const heightText = height > 0 ? `${height}cm` : "키 입력";
     const bmiText = Number.isFinite(bmi) && bmi > 0 ? `BMI ${bmi.toFixed(1)}` : "BMI 미입력";
-    return `7일 기본 예시\n프로필: 성별 ${sex}, 키 ${heightText}, ${bmiText}, 감량 속도 ${goalSpeed}, 단백질 쉐이크 ${proteinShake}\n\n${baseline}\n${shakeNote}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 단백질 쉐이크는 하루 1회 기준으로 가볍게 배치하고, 알레르기 성분과 제품 표시를 꼭 확인하세요.`;
+    return `7일 기본 예시\n프로필: 성별 ${sex}, 키 ${heightText}, ${bmiText}, 목표 방식 ${goalSpeed}, 단백질 쉐이크 ${proteinShake}\n\n${baseline}\n${shakeNote}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 단백질 쉐이크는 하루 1회 기준으로 가볍게 배치하고, 알레르기 성분과 제품 표시를 꼭 확인하세요.`;
 }
 
 const weightDateInput = document.getElementById("weight-date");
@@ -355,7 +364,7 @@ if (state.profile.sex) {
     document.getElementById("sex-input").value = state.profile.sex;
 }
 if (state.goalSpeed) {
-    document.getElementById("goal-speed").value = state.goalSpeed;
+    document.getElementById("goal-speed").value = normalizeGoalSpeed(state.goalSpeed);
 }
 
 document.getElementById("weight-form").addEventListener("submit", event => {
@@ -365,7 +374,7 @@ document.getElementById("weight-form").addEventListener("submit", event => {
     const goalInput = document.getElementById("goal-weight").value;
     const heightInput = Number(document.getElementById("height-input").value);
     const sexInput = document.getElementById("sex-input").value;
-    const speedInput = document.getElementById("goal-speed").value;
+    const speedInput = normalizeGoalSpeed(document.getElementById("goal-speed").value);
     const status = document.getElementById("weight-status");
     if (!Number.isFinite(weight) || weight < 20 || weight > 300) {
         status.textContent = "체중을 20~300 kg 범위에서 입력해 주세요.";
@@ -389,7 +398,7 @@ document.getElementById("weight-form").addEventListener("submit", event => {
     if (sexInput) state.profile.sex = sexInput;
     const saved = saveState();
     status.textContent = saved
-        ? `${date} 체중 ${weight.toFixed(1)} kg을 기록했어요. 목표: ${state.goalSpeed}. ${state.profile.heightCm ? `BMI ${calculateBMI(weight, state.profile.heightCm).toFixed(1)}` : "키 정보가 반영됐어요."}`
+        ? `${date} 체중 ${weight.toFixed(1)} kg을 기록했어요. 목표 방식: ${state.goalSpeed}. ${state.profile.heightCm ? `BMI ${calculateBMI(weight, state.profile.heightCm).toFixed(1)}` : "키 정보가 반영됐어요."}`
         : "기록했지만 브라우저 저장이 차단됐어요. localhost에서 열어 주세요.";
     document.getElementById("weight-input").value = "";
     renderAll();
