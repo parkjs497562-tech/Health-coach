@@ -60,7 +60,11 @@ class handler(BaseHTTPRequestHandler):
             request = Request(
                 "https://api.groq.com/openai/v1/chat/completions",
                 data=request_data,
-                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                    "User-Agent": "FormaHealthCoach/1.0",
+                },
                 method="POST",
             )
             with urlopen(request, timeout=50) as response:
@@ -72,10 +76,13 @@ class handler(BaseHTTPRequestHandler):
                 return
             _json_response(self, 200, {"plan": text.strip()})
         except HTTPError as error:
+            raw_detail = error.read().decode("utf-8", "replace")
             try:
-                detail = json.loads(error.read()).get("error", {}).get("message", "")
+                parsed = json.loads(raw_detail)
+                api_error = parsed.get("error", {})
+                detail = api_error.get("message", "") if isinstance(api_error, dict) else str(api_error)
             except (ValueError, TypeError):
-                detail = ""
+                detail = raw_detail
             detail = str(detail).replace(api_key, "[숨김]")[:300]
             _json_response(self, 502, {"error": f"Groq API 오류 (HTTP {error.code}) {detail}".strip()})
         except (URLError, TimeoutError):

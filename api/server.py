@@ -76,7 +76,11 @@ class Handler(SimpleHTTPRequestHandler):
             request = Request(
                 "https://api.groq.com/openai/v1/chat/completions",
                 data=request_data,
-                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                    "User-Agent": "FormaHealthCoach/1.0",
+                },
                 method="POST",
             )
             print("Groq meal-plan request started", flush=True)
@@ -89,10 +93,13 @@ class Handler(SimpleHTTPRequestHandler):
                 raise RuntimeError("Groq 응답에 식단 텍스트가 없어요. 서버 로그를 확인해 주세요.")
             self.send_json(200, {"plan": output})
         except HTTPError as error:
+            raw_detail = error.read().decode("utf-8", "replace")
             try:
-                provider_error = json.loads(error.read()).get("error", {}).get("message", "")
+                parsed = json.loads(raw_detail)
+                api_error = parsed.get("error", {})
+                provider_error = api_error.get("message", "") if isinstance(api_error, dict) else str(api_error)
             except (ValueError, TypeError):
-                provider_error = ""
+                provider_error = raw_detail
             provider_error = str(provider_error).replace(api_key, "[숨김]")[:400]
             detail = f" · {provider_error}" if provider_error else ""
             print(f"Groq meal-plan HTTP error: {error.code}{detail}", flush=True)
