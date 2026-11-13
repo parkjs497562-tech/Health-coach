@@ -350,7 +350,7 @@ function makeQuickMealFallback(profile) {
     const shopping = [...new Set(pickedMeals.join(" ").match(/단백질|요거트|바나나|귀리|달걀|두부|닭가슴살|닭|연어|생선|채소|고구마|버섯|현미|쌀|과일|콩나물|소고기/g) || [])];
     const heightText = height > 0 ? `${height}cm` : "키 입력";
     const bmiText = Number.isFinite(bmi) && bmi > 0 ? `BMI ${bmi.toFixed(1)}` : "BMI 미입력";
-    return `3일 기본 예시\n프로필: 성별 ${sex}, 키 ${heightText}, ${bmiText}, 목표 방식 ${goalSpeed}, 단백질 쉐이크 ${proteinShake}\n\n${baseline}\n${shakeNote}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 단백질 쉐이크는 하루 1회 기준으로 가볍게 배치하고, 알레르기 성분과 제품 표시를 꼭 확인하세요.`;
+    return `3일 기본 예시\n프로필: 성별 ${sex}, 키 ${heightText}, ${bmiText}, 목표 방식 ${goalSpeed}, 단백질 쉐이크 ${proteinShake}\n\n${baseline}\n${shakeNote}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGroq 응답 전에 표시되는 기본 예시예요. 단백질 쉐이크는 하루 1회 기준으로 가볍게 배치하고, 알레르기 성분과 제품 표시를 꼭 확인하세요.`;
 }
 
 const weightDateInput = document.getElementById("weight-date");
@@ -451,8 +451,8 @@ document.getElementById("meal-plan-form").addEventListener("submit", async event
     const status = document.getElementById("meal-plan-status");
     const button = document.getElementById("meal-plan-button");
     button.disabled = true;
-    button.textContent = "Gemini가 3일 식단을 만들고 있어요…";
-    status.textContent = "기본 3일 예시를 먼저 보여드려요. Gemini에 간단한 식단을 요청하고 있어요.";
+    button.textContent = "Groq가 3일 식단을 만들고 있어요…";
+    status.textContent = "기본 3일 예시를 먼저 보여드려요. Groq에 간단한 식단을 요청하고 있어요.";
     const content = document.getElementById("meal-plan-content");
     content.innerHTML = renderMealPlan(makeQuickMealFallback(profile));
     content.classList.add("ai-plan-rendered");
@@ -468,13 +468,13 @@ document.getElementById("meal-plan-form").addEventListener("submit", async event
         if (!response.ok) throw new Error(data.error || "식단 생성에 실패했어요.");
         content.innerHTML = renderMealPlan(data.plan);
         content.classList.add("ai-plan-rendered");
-        status.textContent = "Gemini가 3일 식단을 만들었어요. 알레르기와 제품 표시를 확인해 주세요.";
+        status.textContent = "Groq가 3일 식단을 만들었어요. 알레르기와 제품 표시를 확인해 주세요.";
     } catch (error) {
         const message = error.message || "서버에 연결할 수 없어요. 실행 안내를 확인해 주세요.";
-        status.textContent = `Gemini 응답이 지연되어 기본 3일 예시를 표시했어요. ${message}`;
+        status.textContent = `Groq 응답이 지연되어 기본 3일 예시를 표시했어요. ${message}`;
     } finally {
         button.disabled = false;
-        button.innerHTML = 'Gemini로 3일 식단 만들기 <span>✳</span>';
+        button.innerHTML = 'Groq로 3일 식단 만들기 <span>✳</span>';
     }
     document.getElementById("meal-plan-result").scrollIntoView({ behavior: "smooth", block: "start" });
 });

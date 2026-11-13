@@ -1,4 +1,4 @@
-"""Vercel serverless endpoint for the Gemini meal planner."""
+"""Vercel serverless endpoint for the Groq meal planner."""
 
 import json
 import os
@@ -17,28 +17,14 @@ def _json_response(handler, status, payload):
     handler.wfile.write(body)
 
 
-def _get_text(value):
-    chunks = []
-    if isinstance(value, list):
-        for item in value:
-            chunks.extend(_get_text(item))
-    elif isinstance(value, dict):
-        if value.get("type") == "text" and isinstance(value.get("text"), str):
-            chunks.append(value["text"])
-        for key in ("interaction", "steps", "outputs", "content", "parts"):
-            if key in value:
-                chunks.extend(_get_text(value[key]))
-    return chunks
-
-
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         _json_response(self, 405, {"error": "POST 요청만 지원합니다."})
 
     def do_POST(self):
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
-            _json_response(self, 503, {"error": "Vercel 환경 변수 GEMINI_API_KEY가 설정되지 않았어요."})
+            _json_response(self, 503, {"error": "Vercel 환경 변수 GROQ_API_KEY가 설정되지 않았어요."})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -62,29 +48,27 @@ class handler(BaseHTTPRequestHandler):
                 + json.dumps(clean, ensure_ascii=False)
             )
             request_data = json.dumps({
-                "model": os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite"),
-                "input": prompt,
-                "store": False,
-                "system_instruction": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다.",
-                "generation_config": {
-                    "thinking_level": "minimal",
-                    "temperature": 0.3,
-                    "max_output_tokens": 1800,
-                },
+                "model": os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b"),
+                "messages": [
+                    {"role": "system", "content": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다."},
+                    {"role": "user", "content": prompt},
+                ],
+                "reasoning_effort": "low",
+                "temperature": 0.3,
+                "max_completion_tokens": 1800,
             }).encode("utf-8")
             request = Request(
-                "https://generativelanguage.googleapis.com/v1beta/interactions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 data=request_data,
-                headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
                 method="POST",
             )
             with urlopen(request, timeout=50) as response:
                 result = json.loads(response.read())
-            text = result.get("output_text", "")
-            if not text:
-                text = "\n".join(_get_text(result))
+            choices = result.get("choices", [])
+            text = choices[0].get("message", {}).get("content", "") if choices else ""
             if not text.strip():
-                _json_response(self, 502, {"error": "Gemini 응답에서 식단을 찾지 못했어요."})
+                _json_response(self, 502, {"error": "Groq 응답에서 식단을 찾지 못했어요."})
                 return
             _json_response(self, 200, {"plan": text.strip()})
         except HTTPError as error:
@@ -93,9 +77,9 @@ class handler(BaseHTTPRequestHandler):
             except (ValueError, TypeError):
                 detail = ""
             detail = str(detail).replace(api_key, "[숨김]")[:300]
-            _json_response(self, 502, {"error": f"Gemini API 오류 (HTTP {error.code}) {detail}".strip()})
+            _json_response(self, 502, {"error": f"Groq API 오류 (HTTP {error.code}) {detail}".strip()})
         except (URLError, TimeoutError):
-            _json_response(self, 504, {"error": "Gemini 응답 시간이 초과됐어요. 잠시 후 다시 시도해 주세요."})
+            _json_response(self, 504, {"error": "Groq 응답 시간이 초과됐어요. 잠시 후 다시 시도해 주세요."})
         except (ValueError, TypeError):
             _json_response(self, 400, {"error": "요청 형식을 확인해 주세요."})
 

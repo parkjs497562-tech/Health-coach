@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small same-origin web server and Gemini proxy for Forma."""
+"""Small same-origin web server and Groq proxy for Forma."""
 
 import json
 import os
@@ -11,7 +11,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_BODY = 12_000
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 def load_local_env():
@@ -24,31 +24,6 @@ def load_local_env():
             continue
         key, value = line.split("=", 1)
         os.environ.setdefault(key.strip(), value.strip().strip('"\''))
-
-
-def extract_output_text(result):
-    direct = result.get("output_text")
-    if isinstance(direct, str) and direct.strip():
-        return direct.strip()
-    texts = []
-
-    def visit(value):
-        if isinstance(value, list):
-            for item in value:
-                visit(item)
-        elif isinstance(value, dict):
-            if value.get("type") == "text" and isinstance(value.get("text"), str):
-                texts.append(value["text"])
-            for key in ("interaction", "steps", "outputs", "content", "parts"):
-                if key in value:
-                    visit(value[key])
-
-    # Interactions REST responses expose the model response in `steps`;
-    # tolerate SDK-style `outputs` and a wrapped `interaction` as well.
-    for key in ("interaction", "steps", "outputs"):
-        if key in result:
-            visit(result[key])
-    return "\n".join(texts).strip()
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -68,9 +43,9 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path != "/api/meal-plan":
             self.send_json(404, {"error": "요청한 API 경로를 찾을 수 없어요."})
             return
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
-            self.send_json(503, {"error": ".env에 GEMINI_API_KEY를 설정한 뒤 서버를 다시 시작해 주세요."})
+            self.send_json(503, {"error": ".env에 GROQ_API_KEY를 설정한 뒤 서버를 다시 시작해 주세요."})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -90,28 +65,28 @@ class Handler(SimpleHTTPRequestHandler):
             )
             request_data = json.dumps({
                 "model": MODEL,
-                "input": prompt,
-                "store": False,
-                "system_instruction": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다.",
-                "generation_config": {
-                    "thinking_level": "minimal",
-                    "temperature": 0.3,
-                    "max_output_tokens": 1800,
-                },
+                "messages": [
+                    {"role": "system", "content": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다."},
+                    {"role": "user", "content": prompt},
+                ],
+                "reasoning_effort": "low",
+                "temperature": 0.3,
+                "max_completion_tokens": 1800,
             }).encode("utf-8")
             request = Request(
-                "https://generativelanguage.googleapis.com/v1beta/interactions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 data=request_data,
-                headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
                 method="POST",
             )
-            print("Gemini meal-plan request started", flush=True)
+            print("Groq meal-plan request started", flush=True)
             with urlopen(request, timeout=45) as response:
                 result = json.loads(response.read())
-            print("Gemini meal-plan response received", flush=True)
-            output = extract_output_text(result)
+            print("Groq meal-plan response received", flush=True)
+            choices = result.get("choices", [])
+            output = choices[0].get("message", {}).get("content", "") if choices else ""
             if not output:
-                raise RuntimeError("Gemini 응답에 식단 텍스트가 없어요. 서버 로그를 확인해 주세요.")
+                raise RuntimeError("Groq 응답에 식단 텍스트가 없어요. 서버 로그를 확인해 주세요.")
             self.send_json(200, {"plan": output})
         except HTTPError as error:
             try:
@@ -120,11 +95,11 @@ class Handler(SimpleHTTPRequestHandler):
                 provider_error = ""
             provider_error = str(provider_error).replace(api_key, "[숨김]")[:400]
             detail = f" · {provider_error}" if provider_error else ""
-            print(f"Gemini meal-plan HTTP error: {error.code}{detail}", flush=True)
-            self.send_json(502, {"error": f"Gemini API 오류 (HTTP {error.code}){detail}"})
+            print(f"Groq meal-plan HTTP error: {error.code}{detail}", flush=True)
+            self.send_json(502, {"error": f"Groq API 오류 (HTTP {error.code}){detail}"})
         except (URLError, TimeoutError, socket.timeout):
-            print("Gemini meal-plan request timed out or could not connect", flush=True)
-            self.send_json(502, {"error": "Gemini 응답이 늦거나 연결할 수 없어요. 잠시 후 다시 시도해 주세요."})
+            print("Groq meal-plan request timed out or could not connect", flush=True)
+            self.send_json(502, {"error": "Groq 응답이 늦거나 연결할 수 없어요. 잠시 후 다시 시도해 주세요."})
         except RuntimeError as error:
             self.send_json(502, {"error": str(error)})
         except (ValueError, TypeError, json.JSONDecodeError):

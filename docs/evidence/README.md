@@ -7,4 +7,4 @@
 3. `ai-meal-plan.png`: 입력값, 생성된 7일 식단, 장보기 목록이 함께 보이는 화면 캡처
 4. `ai-coding-process.png`: Codex/AI 코딩 도구의 작업 대화 또는 변경 화면 캡처
 
-캡처에는 Gemini API 키나 `.env` 내용이 노출되지 않도록 합니다.
+캡처에는 Groq API 키나 `.env` 내용이 노출되지 않도록 합니다.

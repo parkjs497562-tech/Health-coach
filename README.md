@@ -1,17 +1,17 @@
 # Forma — AI Health Coach
 
-Forma is a responsive personal wellness dashboard for tracking meals, exercise, and weight. Its meal planner sends a user's goal and food preferences to Gemini and displays a concise seven-day plan.
+Forma is a responsive personal wellness dashboard for tracking meals, exercise, and weight. Its meal planner sends a user's goal and food preferences to Groq and displays a concise meal plan.
 
 ## Pages and features
 
 The site is a single-page app with four menu-linked sections:
 
 - **Dashboard:** weight chart, daily intake summary, weekly exercise, and habit calendar
-- **Meal management:** meal logging and Gemini-generated seven-day meal ideas
+- **Meal management:** meal logging and Groq-generated meal ideas
 - **Exercise management:** exercise logging and a basic workout planner
 - **Health report:** weekly summaries of weight, meals, and exercise
 
-Health logs stay in browser local storage. Meal-planner inputs are sent to Gemini only after the user checks the consent box. The Gemini request uses `store: false`. The app also shows a basic meal-plan example while waiting for the API response.
+Health logs stay in browser local storage. Meal-planner inputs are sent to Groq only after the user checks the consent box. The app also shows a basic meal-plan example while waiting for the API response.
 
 ## Tech stack
 
@@ -20,7 +20,7 @@ Health logs stay in browser local storage. Meal-planner inputs are sent to Gemin
 | Frontend | HTML, CSS, vanilla JavaScript |
 | Local API | Python standard library HTTP server |
 | Deployed API | Vercel Python Function |
-| Generative AI | Google Gemini Interactions API |
+| Generative AI | Groq Chat Completions API (`openai/gpt-oss-20b`) |
 | Hosting | Vercel |
 
 ## Project structure
@@ -42,7 +42,7 @@ Health-coach/
 ## Run locally
 
 1. Install Python 3.9 or newer.
-2. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` to a key from Google AI Studio.
+2. Copy `.env.example` to `.env` and set `GROQ_API_KEY` to an API key from the Groq console.
 3. Start the local server:
 
    ```bash
@@ -57,10 +57,10 @@ Never put the API key in HTML or JavaScript, and do not commit `.env`.
 
 1. Push this repository to GitHub and import it from the Vercel dashboard.
 2. Keep the project root directory as `.`. The site files are served as static assets and `api/meal-plan.py` is deployed as `/api/meal-plan`.
-3. In **Project Settings → Environment Variables**, add `GEMINI_API_KEY` for Production (and Preview if needed).
+3. In **Project Settings → Environment Variables**, add `GROQ_API_KEY` for Production (and Preview if needed).
 4. Redeploy, then test the meal planner on the deployed domain.
 
-`vercel.json` sets a 60-second maximum duration for the Gemini function. Vercel's Hobby plan permits up to 60 seconds; see [Vercel Python Functions](https://vercel.com/docs/functions/runtimes/python).
+`vercel.json` sets a 60-second maximum duration for the meal-plan function. Vercel's Hobby plan permits up to 60 seconds; see [Vercel Python Functions](https://vercel.com/docs/functions/runtimes/python).
 
 ### Deployment URL
 
@@ -72,8 +72,8 @@ This preview URL currently requires Vercel Authentication, so it is not accessib
 
 | Name | Required | Purpose |
 |---|---:|---|
-| `GEMINI_API_KEY` | Yes | Server-side Gemini API key |
-| `GEMINI_MODEL` | No | Override the default `gemini-3.5-flash-lite` model |
+| `GROQ_API_KEY` | Yes | Server-side Groq API key |
+| `GROQ_MODEL` | No | Override the default `openai/gpt-oss-20b` model |
 | `HOST` / `PORT` | Local only | Local server bind address (defaults to `127.0.0.1:8000`) |
 
 ## Service plan and evidence
