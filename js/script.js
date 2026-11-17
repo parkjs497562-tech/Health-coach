@@ -130,9 +130,13 @@ function renderMetrics() {
     const previousWeight = sortedWeights.at(-2);
     const bmi = getCurrentBMI();
     document.getElementById("current-weight").textContent = latestWeight ? latestWeight.weight.toFixed(1) : "--";
-    document.getElementById("weight-change").textContent = previousWeight
+    const weightSummary = previousWeight
         ? `${latestWeight.weight - previousWeight.weight > 0 ? "+" : ""}${(latestWeight.weight - previousWeight.weight).toFixed(1)} kg · 직전 기록 대비`
         : latestWeight ? "첫 체중 기록이 저장됐어요" : "첫 체중을 기록해 보세요";
+    const bmiSummary = bmi === null ? "키 입력 시 BMI 계산" : `BMI ${bmi.toFixed(1)}`;
+    document.getElementById("weight-change").textContent = latestWeight
+        ? `${weightSummary} · ${bmiSummary}`
+        : weightSummary;
 
     document.getElementById("bmi-value").textContent = bmi === null ? "--" : bmi.toFixed(1);
     document.getElementById("bmi-note").textContent = bmi === null
