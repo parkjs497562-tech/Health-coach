@@ -285,9 +285,19 @@ function getStreak() {
 
 function getMealPlanProfile(formElement) {
     const profile = Object.fromEntries(new FormData(formElement).entries());
+    const heightCm = Number(state.profile.heightCm || 0);
+    const latestWeight = [...state.weights]
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .at(-1)?.weight ?? null;
+    const bmi = latestWeight !== null && heightCm > 0
+        ? calculateBMI(latestWeight, heightCm)
+        : null;
     return {
         goal: String(profile.goal || "균형 잡힌 일반식").trim(),
-        avoid: String(profile.avoid || "").trim()
+        avoid: String(profile.avoid || "").trim(),
+        sex: state.profile.sex || "",
+        heightCm: heightCm > 0 ? String(heightCm) : "",
+        bmi: bmi === null ? "" : bmi.toFixed(1)
     };
 }
 
@@ -340,7 +350,12 @@ function makeQuickMealFallback(profile) {
         return `${day + 1}일차\n${lines.join("\n")}`;
     });
     const shopping = [...new Set(pickedMeals.join(" ").match(/단백질|요거트|바나나|귀리|달걀|두부|닭가슴살|닭|연어|생선|채소|고구마|버섯|현미|쌀|과일|콩나물|소고기/g) || [])];
-    return `3일 기본 예시\n원하는 식단: ${goal}\n피해야 할 음식: ${profile.avoid || "없음"}\n\n${baseline}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 알레르기와 제품 표시를 꼭 확인하세요.`;
+    const bodyInfo = [
+        profile.sex && `성별 ${profile.sex}`,
+        profile.heightCm && `키 ${profile.heightCm}cm`,
+        profile.bmi && `BMI ${profile.bmi}`
+    ].filter(Boolean).join(" · ");
+    return `3일 기본 예시\n원하는 식단: ${goal}\n피해야 할 음식: ${profile.avoid || "없음"}${bodyInfo ? `\n체중 기록 참고: ${bodyInfo}` : ""}\n\n${baseline}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 알레르기와 제품 표시를 꼭 확인하세요.`;
 }
 
 const weightDateInput = document.getElementById("weight-date");

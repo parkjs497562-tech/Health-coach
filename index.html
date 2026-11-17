@@ -100,13 +100,13 @@
                 </div>
                 <details class="planner-details meal-planner" open>
                     <summary>나에게 맞는 식단 만들기 <span class="planner-subtitle">원하는 식단과 피해야 할 음식을 반영한 3일 플랜</span></summary>
-                    <p class="details-copy">원하는 식단과 못 먹는 음식을 바탕으로 3일 메뉴와 장보기 목록을 만들어요. 입력한 두 항목만 Google Gemini로 전송됩니다. 결과가 오기 전 기본 예시를 먼저 보여드려요.</p>
+                    <p class="details-copy">원하는 식단과 못 먹는 음식에 더해, 체중 변화에 저장된 성별·키와 계산된 BMI를 참고해 3일 메뉴를 만들어요. 입력 정보와 체중 참고 정보는 동의 후 Google Gemini로 전송됩니다.</p>
                     <form id="meal-plan-form" class="form-card planner-form">
                         <div class="planner-fields">
                             <label class="wide-field">원하는 식단<input name="goal" maxlength="120" value="균형 잡힌 일반식" placeholder="예: 한식 위주, 체중 감량용, 고단백 식단" required></label>
                             <label class="wide-field">못 먹는 음식·알레르기<input name="avoid" maxlength="200" placeholder="예: 땅콩, 유제품 (없으면 비워 두세요)"></label>
                         </div>
-                        <label class="consent-line"><input name="consent" type="checkbox" required> 원하는 식단과 못 먹는 음식이 식단 생성을 위해 Google Gemini로 전송됨을 확인했습니다.</label>
+                        <label class="consent-line"><input name="consent" type="checkbox" required> 원하는 식단, 못 먹는 음식, 체중 기록의 성별·키·BMI가 식단 생성을 위해 Google Gemini로 전송됨을 확인했습니다.</label>
                         <button type="submit" id="meal-plan-button" class="primary-button">Gemini로 3일 식단 만들기 <span>✳</span></button>
                         <p class="status" id="meal-plan-status" role="status" aria-live="polite"></p>
                     </form>

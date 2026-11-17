@@ -1,6 +1,6 @@
 # Forma — AI Health Coach
 
-Forma is a responsive personal wellness dashboard for tracking meals, exercise, and weight. Its meal planner sends a user's desired diet and foods to avoid to Google Gemini and displays a concise three-day plan.
+Forma is a responsive personal wellness dashboard for tracking meals, exercise, and weight. Its meal planner sends a user's desired diet and foods to avoid to Google Gemini, with saved sex, height, and calculated BMI as optional context, and displays a concise three-day plan.
 
 ## Pages and features
 
@@ -11,7 +11,7 @@ The site is a single-page app with four menu-linked sections:
 - **Exercise management:** exercise logging and a basic workout planner
 - **Health report:** weekly summaries of weight, meals, and exercise
 
-Health logs stay in browser local storage. The desired diet and foods to avoid are sent to Gemini only after the user checks the consent box. The Gemini request sets `store: false`. The app also shows a basic meal-plan example while waiting for the API response.
+Health logs stay in browser local storage. The desired diet, foods to avoid, and—after consent—saved sex, height, and calculated BMI are sent to Gemini. The Gemini request sets `store: false`. The app also shows a basic meal-plan example while waiting for the API response.
 
 ## Tech stack
 
