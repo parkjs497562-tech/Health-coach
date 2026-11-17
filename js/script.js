@@ -285,40 +285,27 @@ function getStreak() {
 
 function getMealPlanProfile(formElement) {
     const profile = Object.fromEntries(new FormData(formElement).entries());
-    const height = Number(profile.height || 0);
-    const sex = profile.sex || state.profile.sex || "";
-    const weight = [...state.weights].sort((a, b) => a.date.localeCompare(b.date)).at(-1)?.weight ?? null;
-    const bmi = weight !== null && Number.isFinite(height) && height > 0 ? calculateBMI(weight, height) : null;
     return {
-        ...profile,
-        goalSpeed: normalizeGoalSpeed(state.goalSpeed || "점진적 감량"),
-        bmi: bmi === null ? "미입력" : bmi.toFixed(1),
-        height: String(height > 0 ? height : state.profile.heightCm ?? ""),
-        sex,
-        proteinShake: String(profile.proteinShake || "하루 1회")
+        goal: String(profile.goal || "균형 잡힌 일반식").trim(),
+        avoid: String(profile.avoid || "").trim()
     };
 }
 
 function makeQuickMealFallback(profile) {
-    const avoidText = `${profile.avoid || ""} ${(profile.preferences || "")}`.toLowerCase();
-    const goalSpeed = normalizeGoalSpeed(String(profile.goalSpeed || state.goalSpeed || "점진적 감량"));
-    const sex = String(profile.sex || state.profile.sex || "미상");
-    const height = Number(profile.height || state.profile.heightCm || 0);
-    const bmi = Number(profile.bmi || 0);
-    const proteinShake = String(profile.proteinShake || "하루 1회");
-    const baseline = goalSpeed.includes("체중 유지")
-        ? "체중 유지 목표로는 에너지 균형을 유지하면서 단백질과 채소 중심으로 하루를 구성하는 것이 가장 안정적"
-        : goalSpeed.includes("근육") || goalSpeed.includes("형성")
-            ? "근육형성 목표로는 단백질을 충분히 섭취하고, 단백질 쉐이크를 운동 후나 아침에 활용해 영양 균형을 맞추는 쪽이 좋아요"
-            : goalSpeed.includes("균형적")
-                ? "균형적 감량 목표로는 식사량을 크게 줄이기보다 단백질과 채소를 중심으로 꾸준하게 유지하는 방식이 좋습니다"
-                : "점진적 감량 목표로는 가볍게 포만감을 주는 단백질 중심 식사와 하루 1회 단백질 쉐이크를 조합해 꾸준히 이어가는 것이 가장 현실적";
-    const shakeNote = /매일|하루/.test(proteinShake)
-        ? "하루 1회 단백질 쉐이크는 아침 또는 오후 간식 시간에 넣고, 점심/저녁은 단백질 + 채소 + 복합 탄수화물 중심으로 구성"
-        : "단백질 쉐이크는 3~5회/주로 넣어도 되고, 하루 1회만 생활화해도 충분히 보완 가능";
+    const avoidText = String(profile.avoid || "").toLowerCase();
+    const goal = String(profile.goal || "균형 잡힌 일반식");
+    const isVegetarian = /채식|비건/.test(goal);
+    const meatTags = ["닭", "연어", "생선", "소고기"];
+    const baseline = goal.includes("감량")
+        ? "무리하게 식사량을 줄이기보다 단백질과 채소를 포함해 포만감과 균형을 고려한 구성"
+        : goal.includes("고단백")
+            ? "두부, 달걀, 생선, 살코기 등 단백질 식품을 끼니마다 포함한 구성"
+            : isVegetarian
+                ? "두부, 콩, 달걀과 다양한 채소를 활용한 식물성 중심 구성"
+                : "곡류, 단백질 식품, 채소를 함께 담은 균형 잡힌 구성";
     const meals = {
         "아침": [
-            { name: "그릭요거트 + 바나나 + 귀리 + 단백질 쉐이크", tags: ["단백질", "요거트", "바나나", "귀리"] },
+            { name: "그릭요거트 + 바나나 + 귀리", tags: ["요거트", "바나나", "귀리"] },
             { name: "삶은 달걀 2개 + 현미밥 + 오이샐러드", tags: ["달걀", "쌀", "채소"] },
             { name: "두부 채소 스무디 + 과일", tags: ["두부", "채소", "과일", "단백질"] },
             { name: "닭가슴살 샐러드 + 고구마", tags: ["닭", "채소", "고구마", "단백질"] }
@@ -340,17 +327,20 @@ function makeQuickMealFallback(profile) {
     const pickedMeals = [];
     const dayLines = Array.from({ length: 3 }, (_, day) => {
         const lines = Object.entries(meals).map(([type, options], mealIndex) => {
-            const safe = options.filter(item => !item.tags.some(tag => avoidText.includes(tag.toLowerCase())));
-            const choice = safe[(day + mealIndex) % safe.length] || options[(day + mealIndex) % options.length];
+            const safe = options.filter(item =>
+                !item.tags.some(tag => avoidText.includes(tag.toLowerCase())) &&
+                !(isVegetarian && item.tags.some(tag => meatTags.includes(tag)))
+            );
+            const choice = safe.length
+                ? safe[(day + mealIndex) % safe.length]
+                : { name: "제외 조건에 맞는 기본 메뉴가 없어 직접 확인해 주세요", tags: [] };
             pickedMeals.push(choice.name);
             return `${type}: ${choice.name}`;
         });
         return `${day + 1}일차\n${lines.join("\n")}`;
     });
     const shopping = [...new Set(pickedMeals.join(" ").match(/단백질|요거트|바나나|귀리|달걀|두부|닭가슴살|닭|연어|생선|채소|고구마|버섯|현미|쌀|과일|콩나물|소고기/g) || [])];
-    const heightText = height > 0 ? `${height}cm` : "키 입력";
-    const bmiText = Number.isFinite(bmi) && bmi > 0 ? `BMI ${bmi.toFixed(1)}` : "BMI 미입력";
-    return `3일 기본 예시\n프로필: 성별 ${sex}, 키 ${heightText}, ${bmiText}, 목표 방식 ${goalSpeed}, 단백질 쉐이크 ${proteinShake}\n\n${baseline}\n${shakeNote}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 단백질 쉐이크는 하루 1회 기준으로 가볍게 배치하고, 알레르기 성분과 제품 표시를 꼭 확인하세요.`;
+    return `3일 기본 예시\n원하는 식단: ${goal}\n피해야 할 음식: ${profile.avoid || "없음"}\n\n${baseline}\n\n${dayLines.join("\n\n")}\n\n장보기: ${shopping.join(", ")}\n\nGemini 응답 전에 표시되는 기본 예시예요. 알레르기와 제품 표시를 꼭 확인하세요.`;
 }
 
 const weightDateInput = document.getElementById("weight-date");
