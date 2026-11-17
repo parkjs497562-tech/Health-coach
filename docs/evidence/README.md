@@ -4,7 +4,7 @@
 
 1. `desktop-dashboard.png`: 데스크톱 폭에서 대시보드와 메뉴 내비게이션이 보이도록 캡처
 2. `mobile-dashboard.png`: 브라우저 개발자 도구 모바일 모드에서 대시보드와 메뉴 이동을 캡처
-3. `ai-meal-plan.png`: 입력값, 생성된 7일 식단, 장보기 목록이 함께 보이는 화면 캡처
+3. `ai-meal-plan.png`: 입력값, 생성된 3일 식단, 장보기 목록이 함께 보이는 화면 캡처
 4. `ai-coding-process.png`: Codex/AI 코딩 도구의 작업 대화 또는 변경 화면 캡처
 
-캡처에는 Groq API 키나 `.env` 내용이 노출되지 않도록 합니다.
+캡처에는 Gemini API 키나 `.env` 내용이 노출되지 않도록 합니다.

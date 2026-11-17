@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small same-origin web server and Groq proxy for Forma."""
+"""Small same-origin web server and Gemini proxy for Forma."""
 
 import json
 import os
@@ -11,7 +11,6 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_BODY = 12_000
-MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 def load_local_env():
@@ -43,9 +42,9 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path != "/api/meal-plan":
             self.send_json(404, {"error": "요청한 API 경로를 찾을 수 없어요."})
             return
-        api_key = os.environ.get("GROQ_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if not api_key:
-            self.send_json(503, {"error": ".env에 GROQ_API_KEY를 설정한 뒤 서버를 다시 시작해 주세요."})
+            self.send_json(503, {"error": ".env에 GEMINI_API_KEY를 설정한 뒤 서버를 다시 시작해 주세요."})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -56,7 +55,7 @@ class Handler(SimpleHTTPRequestHandler):
             allowed = ("goal", "goalSpeed", "height", "sex", "bmi", "proteinShake", "avoid", "preferences")
             clean = {key: str(profile.get(key, ""))[:250] for key in allowed}
             prompt = (
-                "7일 식단을 한국어로 간단히 작성하세요. 각 날짜마다 아침·점심·저녁 메뉴를 한 줄씩, "
+                "3일 식단을 한국어로 간단히 작성하세요. 각 날짜마다 아침·점심·저녁 메뉴를 한 줄씩, "
                 "음식 이름과 대략적인 1인분 양만 적으세요. 마지막에 장보기 재료를 한 줄로 적으세요. "
                 "조리법, 칼로리, 대체 메뉴, 긴 설명은 생략하세요. 알레르기·제외 재료는 반드시 피하세요. "
                 "사용자 프로필: 키, 성별, BMI, 감량 속도, 단백질 쉐이크 여부를 우선적으로 반영하되, "
@@ -64,33 +63,49 @@ class Handler(SimpleHTTPRequestHandler):
                 + json.dumps(clean, ensure_ascii=False)
             )
             request_data = json.dumps({
-                "model": MODEL,
-                "messages": [
-                    {"role": "system", "content": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다."},
-                    {"role": "user", "content": prompt},
-                ],
-                "reasoning_effort": "low",
-                "temperature": 0.3,
-                "max_completion_tokens": 1800,
+                "model": os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite"),
+                "input": prompt,
+                "system_instruction": "당신은 안전하고 현실적인 식생활 아이디어를 제공하는 한국어 웰니스 도우미입니다. 의료 진단이나 처방을 하지 않습니다.",
+                "store": False,
+                "generation_config": {
+                    "thinking_level": "minimal",
+                    "temperature": 0.3,
+                    "max_output_tokens": 1200,
+                },
             }).encode("utf-8")
             request = Request(
-                "https://api.groq.com/openai/v1/chat/completions",
+                "https://generativelanguage.googleapis.com/v1beta/interactions",
                 data=request_data,
                 headers={
                     "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_key}",
+                    "x-goog-api-key": api_key,
                     "User-Agent": "FormaHealthCoach/1.0",
                 },
                 method="POST",
             )
-            print("Groq meal-plan request started", flush=True)
-            with urlopen(request, timeout=45) as response:
+            print("Gemini meal-plan request started", flush=True)
+            with urlopen(request, timeout=40) as response:
                 result = json.loads(response.read())
-            print("Groq meal-plan response received", flush=True)
-            choices = result.get("choices", [])
-            output = choices[0].get("message", {}).get("content", "") if choices else ""
+            print("Gemini meal-plan response received", flush=True)
+            output = result.get("output_text", "")
             if not output:
-                raise RuntimeError("Groq 응답에 식단 텍스트가 없어요. 서버 로그를 확인해 주세요.")
+                texts = []
+                def visit(value):
+                    if isinstance(value, list):
+                        for item in value:
+                            visit(item)
+                    elif isinstance(value, dict):
+                        if value.get("type") == "text" and isinstance(value.get("text"), str):
+                            texts.append(value["text"])
+                        for key in ("steps", "outputs", "output", "content", "parts"):
+                            if key in value:
+                                visit(value[key])
+                for key in ("steps", "outputs", "output"):
+                    if key in result:
+                        visit(result[key])
+                output = "\n".join(texts).strip()
+            if not output:
+                raise RuntimeError(f"Gemini 응답에 식단 텍스트가 없어요. 상태: {result.get('status', '응답 없음')}")
             self.send_json(200, {"plan": output})
         except HTTPError as error:
             raw_detail = error.read().decode("utf-8", "replace")
@@ -102,11 +117,11 @@ class Handler(SimpleHTTPRequestHandler):
                 provider_error = raw_detail
             provider_error = str(provider_error).replace(api_key, "[숨김]")[:400]
             detail = f" · {provider_error}" if provider_error else ""
-            print(f"Groq meal-plan HTTP error: {error.code}{detail}", flush=True)
-            self.send_json(502, {"error": f"Groq API 오류 (HTTP {error.code}){detail}"})
+            print(f"Gemini meal-plan HTTP error: {error.code}{detail}", flush=True)
+            self.send_json(502, {"error": f"Gemini API 오류 (HTTP {error.code}){detail}"})
         except (URLError, TimeoutError, socket.timeout):
-            print("Groq meal-plan request timed out or could not connect", flush=True)
-            self.send_json(502, {"error": "Groq 응답이 늦거나 연결할 수 없어요. 잠시 후 다시 시도해 주세요."})
+            print("Gemini meal-plan request timed out or could not connect", flush=True)
+            self.send_json(502, {"error": "Gemini 응답이 늦거나 연결할 수 없어요. 잠시 후 다시 시도해 주세요."})
         except RuntimeError as error:
             self.send_json(502, {"error": str(error)})
         except (ValueError, TypeError, json.JSONDecodeError):
